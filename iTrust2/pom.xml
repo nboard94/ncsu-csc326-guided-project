@@ -26,9 +26,9 @@
 		<cucumber.options>--plugin json:target/cucumber.json</cucumber.options>
 		<jacoco.version>0.7.5.201505241946</jacoco.version>
 		<surefire.version>2.20</surefire.version>
-	 	<failsafe.version>2.20</failsafe.version>
- 		<maven.compiler.version>3.7.0</maven.compiler.version>
- 		<jetty.version>9.2.2.v20140723</jetty.version>
+		<failsafe.version>2.20</failsafe.version>
+		<maven.compiler.version>3.7.0</maven.compiler.version>
+		<jetty.version>9.2.2.v20140723</jetty.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -274,7 +274,7 @@
 			<artifactId>cucumber-junit</artifactId>
 			<version>1.2.4</version>
 		</dependency>
-		
+
 		<!-- Webflow -->
 		<dependency>
 			<groupId>org.springframework.webflow</groupId>
@@ -327,14 +327,14 @@
 			<artifactId>spring-session</artifactId>
 			<version>1.2.1.RELEASE</version>
 		</dependency>
-		
-		
+
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-		 
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
@@ -353,6 +353,25 @@
 			</resource>
 		</resources>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.4.0</version>
+				<executions>
+					<execution>
+						<id>GenerateTestData</id>
+						<phase>process-test-classes</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<classpathScope>test</classpathScope>
+							<mainClass>edu.ncsu.csc.itrust2.utils.HibernateDataGenerator</mainClass>
+							<cleanupDaemonThreads>false</cleanupDaemonThreads>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -405,10 +424,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.tomcat.maven</groupId> <artifactId>tomcat7-maven-plugin</artifactId>
-			<version>2.2</version> <configuration> <server>myserver</server> </configuration>
-			<executions> <execution> <phase>pre-integration-test</phase> <goals> <goal>redeploy</goal>
-			</goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>

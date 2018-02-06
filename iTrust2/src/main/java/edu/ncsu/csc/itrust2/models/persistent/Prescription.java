@@ -62,7 +62,7 @@ public class Prescription extends DomainObject<Prescription> {
 
     @NotNull
     @ManyToOne
-    @JoinColumn ( name = "patient_id", columnDefinition="varchar(100)" )
+    @JoinColumn ( name = "patient_id", columnDefinition = "varchar(100)" )
     private User     patient;
 
     /**
