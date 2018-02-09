@@ -38,7 +38,7 @@ public class LoginAttempt extends DomainObject<LoginAttempt> {
     private String   ip;
 
     @ManyToOne
-    @JoinColumn ( name = "user_id", columnDefinition="varchar(100)" )
+    @JoinColumn ( name = "user_id", columnDefinition = "varchar(100)" )
     private User     user;
 
     private Calendar time;
