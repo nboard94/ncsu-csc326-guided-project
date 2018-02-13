@@ -4,7 +4,67 @@
 </head>
 <body th:include="layout :: body" th:with="content=~{::content}">
 	<div th:fragment="content">
-		<h1>View All Records</h1>
+		<h1>Welcome to iTrust2 - Patient</h1>
+
+		<script th:inline="javascript">
+			/* Otherwise Thymeleaf tries to parse Javascript as XML and breaks itself sometimes.  Sigh */
+			/*<![CDATA[*/
+			var app = angular.module("logsApp", []);
+			app.controller('logsCtrl', function($scope, $http) {
+				$scope.logs = [];
+				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
+				$scope.loadTable = function() {
+					$http.get("/iTrust2/api/v1/logentries").then(
+							function(response) {
+								$scope.logs = response.data;
+								$scope.message = "";
+							}, function(rejection) {
+								$scope.logs = [];
+								$scope.message = "Could not display logs";
+							});
+				}
+				$scope.loadTable();
+			});
+			/*]]>*/
+		</script>
+
+		<div ng-app="logsApp" ng-controller="logsCtrl">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="panel panel-primary">
+							<div class="panel-heading">
+								<h3>Access Log - All Entries</h3>
+							</div>
+							<div class="panel-body">
+								<table class="table table-bordered">
+									<caption>My Logs:</caption>
+									<thead>
+										<tr>
+											<th>logCode</th>
+											<th>primaryUser</th>
+											<th>time</th>
+											<th>secondaryUser</th>
+											<th>message</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr name="logTableRow"
+											ng-repeat="l in logs | orderBy:'-time'">
+											<td name="logCodeCell">{{l.logCode}}</td>
+											<td name="primaryUserCell">{{l.primaryUser}}</td>
+											<td name="timeCell">{{l.time}}</td>
+											<td name="secondaryUserCell">{{l.secondaryUser}}</td>
+											<td name="messageCell">{{l.message}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
