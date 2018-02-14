@@ -124,5 +124,35 @@ public class APIPasswordTest {
                 .content( "patientPW" ) ).andExpect( status().isBadRequest() );
 
     }
+    
+    @WithMockUser ( username = "patientPW", roles = { "USER", "ADMIN" } )
+    @Test
+    public void testValidRequestReset () throws Exception {
+
+        final UserForm patient = new UserForm( "patientPW", "123456", Role.ROLE_PATIENT, 1 );
+
+        User user = new User( patient );
+        user.save();
+
+        user = User.getByName( "patientPW" ); // ensure they exist
+        
+        final PersonnelForm personnel = new PersonnelForm();
+        personnel.setAddress1( "1 Test Street" );
+        personnel.setAddress2( "Address Part 2" );
+        personnel.setCity( "Prag" );
+        personnel.setEmail( "csc326s182034@gmail.com" );
+        personnel.setFirstName( "Test" );
+        personnel.setLastName( "HCP" );
+        personnel.setPhone( "123-456-7890" );
+        personnel.setSelf( user.getUsername() );
+        personnel.setState( State.NC.toString() );
+        personnel.setZip( "27514" );
+        
+        mvc.perform( post( "/api/v1/personnel" ).contentType( MediaType.APPLICATION_JSON )
+                .content( TestUtils.asJsonString( personnel ) ) );
+        assertTrue( pe.matches( "123456", user.getPassword() ) );
+        mvc.perform( post( "/api/v1/requestPasswordReset" ).contentType( MediaType.APPLICATION_JSON )
+                .content( user.getUsername() ) ).andExpect( status().isOk() );
+    }
 
 }
