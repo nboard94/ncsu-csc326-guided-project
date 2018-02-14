@@ -37,7 +37,7 @@ public class DomainObjectTest {
         le.setLogCode( TransactionType.LOGIN_SUCCESS );
         le.setMessage( "User has logged in" );
         le.setPrimaryUser( "test" );
-        le.setTime( Calendar.getInstance() );
+        le.setTime( Calendar.getInstance().getTime() );
         le.save();
 
         final LogEntry retrieve = (LogEntry) DomainObject.getBy( LogEntry.class, "primaryUser", "test" );

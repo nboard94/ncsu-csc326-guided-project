@@ -1,6 +1,7 @@
 package edu.ncsu.csc.itrust2.models.persistent;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -44,7 +45,7 @@ public class LogEntry extends DomainObject<LogEntry> {
      * The timestamp of when the event occurred
      */
     @NotNull
-    private Calendar        time;
+    private Date            time;
 
     /**
      * The secondary user for the event that has been logged (optional)
@@ -135,7 +136,7 @@ public class LogEntry extends DomainObject<LogEntry> {
         this.setPrimaryUser( primaryUser );
         this.setSecondaryUser( secondaryUser );
         this.setMessage( message );
-        this.setTime( Calendar.getInstance() );
+        this.setTime( Calendar.getInstance().getTime() );
     }
 
     /**
@@ -167,7 +168,7 @@ public class LogEntry extends DomainObject<LogEntry> {
      *
      * @return Time
      */
-    public Calendar getTime () {
+    public Date getTime () {
         return this.time;
     }
 
@@ -250,10 +251,10 @@ public class LogEntry extends DomainObject<LogEntry> {
     /**
      * Sets the time at which the LogEntry occurred.
      *
-     * @param time
+     * @param date
      *            Timestamp when the event occurred.
      */
-    public void setTime ( final Calendar time ) {
-        this.time = time;
+    public void setTime ( final Date date ) {
+        this.time = date;
     }
 }

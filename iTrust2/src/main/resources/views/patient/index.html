@@ -12,18 +12,46 @@
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
 				$scope.logs = [];
+				secondary = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
 				$scope.loadTable = function() {
 					$http.get("/iTrust2/api/v1/logentries").then(
+						function(response) {
+							$scope.logs = response.data;
+							$scope.message = "";
+						}, function(rejection) {
+							$scope.logs = [];
+							$scope.message = "Could not display logs";
+						}
+					);
+					for(i = 0; i < $scope.logs.length; i++) {
+						for(j = 0; j < secondary.length; j++) {
+							if(secondary[j][0] == scope.logs[i].secondaryUser) {
+								break;
+							}
+						}
+						secondary[secondary.length][0] = $scope.logs[i].secondaryUser;
+					}
+					for(i = 0; i < secondary.length; i++) {
+						$http.get("/iTrust2/api/v1/role/{secondary[i][0]}").then(
 							function(response) {
-								$scope.logs = response.data;
+								secondary[i][1] = response.data;
 								$scope.message = "";
 							}, function(rejection) {
-								$scope.logs = [];
-								$scope.message = "Could not display logs";
-							});
+								$scope.message = "error retrieving role";
+							}
+						);
+					}
 				}
 				$scope.loadTable();
+				function secondaryToRole(name) {
+					for(i = 0; i < secondary.length; i++) {
+						if(secondary[i][0] == name) {
+							return secondary[i][1];
+						}
+					}
+					return null;
+				}
 			});
 			/*]]>*/
 		</script>
@@ -44,24 +72,21 @@
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">
-									<caption>My Logs:</caption>
 									<thead>
 										<tr>
-											<th>logCode</th>
-											<th>primaryUser</th>
-											<th>time</th>
-											<th>secondaryUser</th>
-											<th>message</th>
+											<th>Name</th>
+											<th>Role</th>
+											<th>Date and Time</th>
+											<th>Transaction Type</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr name="logTableRow"
 											ng-repeat="l in logs | limitTo:10 | orderBy:'-time'">
-											<td name="logCodeCell">{{l.logCode}}</td>
-											<td name="primaryUserCell">{{l.primaryUser}}</td>
+											<td name="nameCell">{{l.primaryUser}}</td>
+											<td name="roleCell">{{secondaryToRole(l.secondaryUser)}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="secondaryUserCell">{{l.secondaryUser}}</td>
-											<td name="messageCell">{{l.message}}</td>
+											<td name="transactionTypeCell">{{l.logCode}}</td>
 										</tr>
 									</tbody>
 								</table>
