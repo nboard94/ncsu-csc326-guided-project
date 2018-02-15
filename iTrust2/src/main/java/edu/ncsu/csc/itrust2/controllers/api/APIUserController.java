@@ -69,6 +69,21 @@ public class APIUserController extends APIController {
     }
 
     /**
+     * Retrieves and returns the role of the user with the username provided
+     *
+     * @param id
+     *            The username of the user to be retrieved
+     * @return reponse
+     */
+    @GetMapping ( BASE_PATH + "/role/{id}" )
+    public ResponseEntity getRole ( @PathVariable ( "id" ) final String id ) {
+        final User user = User.getByName( id );
+        LoggerUtil.log( TransactionType.VIEW_USER, id );
+        return null == user ? new ResponseEntity( errorResponse( "No User found for id " + id ), HttpStatus.NOT_FOUND )
+                : new ResponseEntity( user.getRole(), HttpStatus.OK );
+    }
+
+    /**
      * Creates a new user from the RequestBody provided, validates it, and saves
      * it to the database.
      *
