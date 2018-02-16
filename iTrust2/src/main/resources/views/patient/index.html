@@ -97,8 +97,7 @@
 			</div>
 		</div>
 
-		<form action="/iTrust2/patient/viewAllRecords">
-			<input type="submit" value="View All Entries" />
+		<form th:action="@{/patient/viewAllRecords}" name= "fname" method="get"> <button type="submit" class="btn btn- primary btn-sm">View All Records</button>
 		</form>
 	</div>
 </body>

@@ -111,4 +111,23 @@ public class AppointmentControllerHCP {
         return "hcp/viewAppointments";
     }
 
+    /**
+     * View all access logs
+     *
+     * @param model
+     *            data for front end
+     * @return mapping
+     */
+    /**
+     * On a GET request to /viewAllRecords, the AppointmentControllerHCP will return
+     * /src/main/resources/views/hcp/viewAllRecords.html.
+     *
+     * @param model
+     *            underlying UI model
+     * @return contents of the page
+     */
+    @GetMapping ( "hcp/viewAllRecords" )
+    public String viewAllRecords ( final Model model ) {
+        return "hcp/viewAllRecords";
+    }
 }

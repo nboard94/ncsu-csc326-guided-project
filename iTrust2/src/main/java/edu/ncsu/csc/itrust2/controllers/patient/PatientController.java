@@ -124,5 +124,25 @@ public class PatientController {
             return "patient/editDemographicsResult";
         }
     }
+    
+    /**
+     * View all access logs
+     *
+     * @param model
+     *            data for front end
+     * @return mapping
+     */
+    /**
+     * On a GET request to /viewAllRecords, the PatientController will return
+     * /src/main/resources/views/patient/viewAllRecords.html.
+     *
+     * @param model
+     *            underlying UI model
+     * @return contents of the page
+     */
+    @GetMapping ( "patient/viewAllRecords" )
+    public String viewAllRecords ( final Model model ) {
+        return "patient/viewAllRecords";
+    }
 
 }
