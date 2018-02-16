@@ -2,6 +2,8 @@ package edu.ncsu.csc.itrust2.controllers.api;
 
 import java.net.InetAddress;
 
+import javax.mail.MessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -165,6 +167,38 @@ public class APIPasswordController extends APIController {
 
                 LoggerUtil.log( TransactionType.PASSWORD_UPDATE_SUCCESS, user.getUsername(),
                         "Successfully changed password for user " + user.getUsername() );
+
+                String addr = "";
+                String firstName = "";
+                final Personnel person = Personnel.getByName( user );
+                if ( person != null ) {
+                    addr = person.getEmail();
+                    firstName = person.getFirstName();
+                }
+                else {
+                    final Patient patient = Patient.getPatient( user );
+                    if ( patient != null ) {
+                        addr = patient.getEmail();
+                        firstName = patient.getFirstName();
+                    }
+                    else {
+                        throw new Exception( "No Patient or Personnel on file for " + user.getId() );
+                    }
+                }
+
+                String body = "Hello " + firstName + ", \n\nYou have successfully reset your password for iTrust2.\n";
+                body += "\nIf you did not request a password reset, please contact a system administrator.\n\n--iTrust2 Admin";
+
+                try {
+                    EmailUtil.sendEmail( addr, "iTrust2 Password Reset Success", body );
+                    LoggerUtil.log( TransactionType.EMAIL_PASSWORD_CHANGE_SENT, user.getUsername(),
+                            "Successfully changed password for user " + user.getUsername() );
+                }
+                catch ( final MessagingException e ) {
+                    LoggerUtil.log( TransactionType.EMAIL_NOT_SENT, user.getUsername(),
+                            "Password change email could not be sent for user " + user.getUsername() );
+                }
+
                 return new ResponseEntity( successResponse( "Passsword changed successfully" ), HttpStatus.OK );
             }
             LoggerUtil.log( TransactionType.PASSWORD_UPDATE_FAILURE, user.getUsername(),
