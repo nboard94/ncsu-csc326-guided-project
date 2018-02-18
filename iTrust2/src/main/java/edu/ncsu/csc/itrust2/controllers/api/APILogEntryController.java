@@ -34,6 +34,17 @@ public class APILogEntryController extends APIController {
     }
 
     /**
+     * Retrieves and returns a List of all LogEntries where the given user is
+     * primaryUser or secondaryUser
+     *
+     * @return list of log entries
+     */
+    @GetMapping ( BASE_PATH + "/logentries/{user}" )
+    public List<LogEntry> getLogEntriesForUser ( @PathVariable ( "user" ) final String user ) {
+        return LogEntry.getAllForUser( user );
+    }
+
+    /**
      * Retrieves and returns a specific log entry specified by the id provided.
      *
      * @param id

@@ -54,6 +54,42 @@ public class APIUserController extends APIController {
     }
 
     /**
+     * Get the current user.
+     *
+     * @return The currently authenticated user.
+     */
+    @GetMapping ( BASE_PATH + "/user" )
+    public ResponseEntity getCurrentUser () {
+        final User self = User.getByName( SecurityContextHolder.getContext().getAuthentication().getName() );
+        if ( self == null ) {
+            return new ResponseEntity( errorResponse( "Could not find a user entry for you" ), HttpStatus.NOT_FOUND );
+        }
+        else {
+            LoggerUtil.log( TransactionType.VIEW_DEMOGRAPHICS, LoggerUtil.currentUser(), self.getUsername(),
+                    "Retrieved demographics for user " + self.getUsername() );
+            return new ResponseEntity( self, HttpStatus.OK );
+        }
+    }
+
+    /**
+     * Get the username of the current user.
+     *
+     * @return The username of the currently authenticated user.
+     */
+    @GetMapping ( BASE_PATH + "/username" )
+    public ResponseEntity getCurrentUsername () {
+        final User self = User.getByName( SecurityContextHolder.getContext().getAuthentication().getName() );
+        if ( self == null ) {
+            return new ResponseEntity( errorResponse( "Could not find a user entry for you" ), HttpStatus.NOT_FOUND );
+        }
+        else {
+            LoggerUtil.log( TransactionType.VIEW_DEMOGRAPHICS, LoggerUtil.currentUser(), self.getUsername(),
+                    "Retrieved demographics for user " + self.getUsername() );
+            return new ResponseEntity( self.getUsername(), HttpStatus.OK );
+        }
+    }
+
+    /**
      * Retrieves and returns the user with the username provided
      *
      * @param id
