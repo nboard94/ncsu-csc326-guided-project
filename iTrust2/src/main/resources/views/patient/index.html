@@ -11,27 +11,27 @@
 			/*<![CDATA[*/
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
-				$scope.message = "default";
+				$scope.message = "";
 				$scope.username = "";
 				$scope.logs = [];
 				$scope.secondary = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
+				var added = false;
 				$scope.loadTable = function() {
 					// get current username
 					$http.get("/iTrust2/api/v1/username").then(
 						function(response) {
 							console.log(response); //
-							$scope.username = response.data;
+							$scope.username = response.data.message;
 							$scope.message = "user retrieved";
+							console.log($scope.username); //
 						}, function(rejection) {
 							console.log(rejection); //
 							$scope.message = "you don't exist";
 						}
-					);
-					console.log($scope.message); //
-					console.log($scope.username); //
+					)
 					// get log entries
-					$http.get("/iTrust2/api/v1/logentries/" + $scope.username).then(
+					.then(function(){$http.get("/iTrust2/api/v1/tenlogsbyuser/" + $scope.username).then(
 						function(response) {
 							console.log(response); //
 							$scope.logs = response.data;
@@ -40,28 +40,36 @@
 							console.log(rejection); //
 							$scope.message = "could not display logs";
 						}
-					);
-					console.log($scope.message); //
+					)})
 					// put all secondary usernames into array
-					for(i = 0; i < $scope.logs.length; i++) {
-						for(j = 0; j < $scope.secondary.length; j++) {
-							if($scope.secondary[j][0] == $scope.logs[i].secondaryUser) {
-								break;
+					.then(function(){
+						console.log("number of logs: " + $scope.logs.length); //
+						for(i = 0; i < $scope.logs.length; i++) {
+							added = false;
+							for(j = 0; j < $scope.secondary.length; j++) {
+								if($scope.secondary[j][0] == $scope.logs[i].secondaryUser) {
+									added = true;
+								}
+							}
+							if(!added) {
+								console.log("adding to array: " + $scope.logs[i].secondaryUser); //
+								$scope.secondary[$scope.secondary.length][0] = $scope.logs[i].secondaryUser;
 							}
 						}
-						$scope.secondary[$scope.secondary.length][0] = $scope.logs[i].secondaryUser;
-					}
+					})
 					// get roles for secondary usernames
-					for(i = 0; i < $scope.secondary.length; i++) {
+					.then(function(){for(i = 0; i < $scope.secondary.length; i++) {
 						$http.get("/iTrust2/api/v1/role/" + $scope.secondary[i][0]).then(
 							function(response) {
+								console.log(response); //
 								$scope.secondary[i][1] = response.data;
 								$scope.message = "role retrieved";
 							}, function(rejection) {
+								console.log(rejection); //
 								$scope.message = "error retrieving role";
 							}
 						);
-					}
+					}})
 				}
 				$scope.loadTable();
 				// convert secondary username to role
@@ -104,7 +112,7 @@
 									</thead>
 									<tbody>
 										<tr name="logTableRow"
-											ng-repeat="l in logs | limitTo:10 | orderBy:'+time'">
+											ng-repeat="l in logs">
 											<td name="transactionTypeCell">{{l.logCode}}</td>
 											<td name="primaryCell">{{l.primaryUser}}</td>
 											<td name="secondaryCell">{{l.secondaryUser}}</td>

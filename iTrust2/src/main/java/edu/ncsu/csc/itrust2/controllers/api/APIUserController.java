@@ -65,8 +65,6 @@ public class APIUserController extends APIController {
             return new ResponseEntity( errorResponse( "Could not find a user entry for you" ), HttpStatus.NOT_FOUND );
         }
         else {
-            LoggerUtil.log( TransactionType.VIEW_DEMOGRAPHICS, LoggerUtil.currentUser(), self.getUsername(),
-                    "Retrieved demographics for user " + self.getUsername() );
             return new ResponseEntity( self, HttpStatus.OK );
         }
     }
@@ -83,9 +81,7 @@ public class APIUserController extends APIController {
             return new ResponseEntity( errorResponse( "Could not find a user entry for you" ), HttpStatus.NOT_FOUND );
         }
         else {
-            LoggerUtil.log( TransactionType.VIEW_DEMOGRAPHICS, LoggerUtil.currentUser(), self.getUsername(),
-                    "Retrieved demographics for user " + self.getUsername() );
-            return new ResponseEntity( self.getUsername(), HttpStatus.OK );
+            return new ResponseEntity( successResponse( self.getUsername() ), HttpStatus.OK );
         }
     }
 

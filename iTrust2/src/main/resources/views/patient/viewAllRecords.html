@@ -11,19 +11,76 @@
 			/*<![CDATA[*/
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
+				$scope.message = "";
+				$scope.username = "";
 				$scope.logs = [];
+				$scope.secondary = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
+				var added = false;
 				$scope.loadTable = function() {
-					$http.get("/iTrust2/api/v1/logentries").then(
+					// get current username
+					$http.get("/iTrust2/api/v1/username").then(
+						function(response) {
+							console.log(response); //
+							$scope.username = response.data.message;
+							$scope.message = "user retrieved";
+							console.log($scope.username); //
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "you don't exist";
+						}
+					)
+					// get log entries
+					.then(function(){$http.get("/iTrust2/api/v1/sortedlogsbyuser/" + $scope.username).then(
+						function(response) {
+							console.log(response); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "could not display logs";
+						}
+					)})
+					// put all secondary usernames into array
+					.then(function(){
+						console.log("number of logs: " + $scope.logs.length); //
+						for(i = 0; i < $scope.logs.length; i++) {
+							added = false;
+							for(j = 0; j < $scope.secondary.length; j++) {
+								if($scope.secondary[j][0] == $scope.logs[i].secondaryUser) {
+									added = true;
+								}
+							}
+							if(!added) {
+								console.log("adding to array: " + $scope.logs[i].secondaryUser); //
+								$scope.secondary[$scope.secondary.length][0] = $scope.logs[i].secondaryUser;
+							}
+						}
+					})
+					// get roles for secondary usernames
+					.then(function(){for(i = 0; i < $scope.secondary.length; i++) {
+						$http.get("/iTrust2/api/v1/role/" + $scope.secondary[i][0]).then(
 							function(response) {
-								$scope.logs = response.data;
-								$scope.message = "";
+								console.log(response); //
+								$scope.secondary[i][1] = response.data;
+								$scope.message = "role retrieved";
 							}, function(rejection) {
-								$scope.logs = [];
-								$scope.message = "Could not display logs";
-							});
+								console.log(rejection); //
+								$scope.message = "error retrieving role";
+							}
+						);
+					}})
 				}
 				$scope.loadTable();
+				// convert secondary username to role
+				function secondaryToRole(name) {
+					for(i = 0; i < $scope.secondary.length; i++) {
+						if($scope.secondary[i][0] == name) {
+							return $scope.secondary[i][1];
+						}
+					}
+					return null;
+				}
 			});
 			/*]]>*/
 		</script>
@@ -38,24 +95,23 @@
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">
-									<caption>My Logs:</caption>
 									<thead>
 										<tr>
-											<th>logCode</th>
-											<th>primaryUser</th>
-											<th>time</th>
-											<th>secondaryUser</th>
-											<th>message</th>
+											<th>Transaction Type</th>
+											<th>Primary User</th>
+											<th>Secondary User</th>
+											<th>Date and Time</th>
+											<th>Role</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr name="logTableRow"
-											ng-repeat="l in logs | orderBy:'-time'">
-											<td name="logCodeCell">{{l.logCode}}</td>
-											<td name="primaryUserCell">{{l.primaryUser}}</td>
+											ng-repeat="l in logs">
+											<td name="transactionTypeCell">{{l.logCode}}</td>
+											<td name="primaryCell">{{l.primaryUser}}</td>
+											<td name="secondaryCell">{{l.secondaryUser}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="secondaryUserCell">{{l.secondaryUser}}</td>
-											<td name="messageCell">{{l.message}}</td>
+											<td name="roleCell">{{secondaryToRole(l.secondaryUser)}}</td>
 										</tr>
 									</tbody>
 								</table>

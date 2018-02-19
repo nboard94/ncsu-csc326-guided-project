@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ncsu.csc.itrust2.models.persistent.LogEntry;
+import edu.ncsu.csc.itrust2.utils.LoggerUtil;
 
 /**
  * REST controller for interacting with Log Entry-related endpoints This will
@@ -39,9 +40,31 @@ public class APILogEntryController extends APIController {
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/logentries/{user}" )
+    @GetMapping ( BASE_PATH + "/logentriesbyuser/{user}" )
     public List<LogEntry> getLogEntriesForUser ( @PathVariable ( "user" ) final String user ) {
         return LogEntry.getAllForUser( user );
+    }
+
+    /**
+     * Retrieves and returns a List of all LogEntries where the given user is
+     * primaryUser or secondaryUser, sorted by most recent
+     *
+     * @return list of log entries
+     */
+    @GetMapping ( BASE_PATH + "/sortedlogsbyuser/{user}" )
+    public List<LogEntry> getSortedForUser ( @PathVariable ( "user" ) final String user ) {
+        return LoggerUtil.getSortedForUser( user );
+    }
+
+    /**
+     * Retrieves and returns a List of the most recent ten LogEntries where the
+     * given user is primaryUser or secondaryUser
+     *
+     * @return list of log entries
+     */
+    @GetMapping ( BASE_PATH + "/tenlogsbyuser/{user}" )
+    public List<LogEntry> getTopTenForUser ( @PathVariable ( "user" ) final String user ) {
+        return LoggerUtil.getTopForUser( user, 10 );
     }
 
     /**

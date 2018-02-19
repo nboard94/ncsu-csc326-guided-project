@@ -100,6 +100,26 @@ public class LoggerUtil {
     }
 
     /**
+     * Get the logged events for a single user specified by name, sorted by most
+     * recent.
+     *
+     * @param user
+     *            User to find LogEntries for
+     * @return A List of the LogEntry Entries for the user.
+     */
+    static public List<LogEntry> getSortedForUser ( final String user ) {
+        final List<LogEntry> all = getAllForUser( user );
+        all.sort( new Comparator<Object>() {
+            @Override
+            public int compare ( final Object arg0, final Object arg1 ) {
+                return -1 * ( ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() ) );
+            }
+
+        } );
+        return all;
+    }
+
+    /**
      * Get the top logged events for a single user specified by name.
      *
      * @param user
@@ -114,18 +134,16 @@ public class LoggerUtil {
         all.sort( new Comparator<Object>() {
             @Override
             public int compare ( final Object arg0, final Object arg1 ) {
-                return ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() );
+                return -1 * ( ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() ) );
             }
 
         } );
         try {
             return all.subList( 0, top );
         }
-        catch ( final IndexOutOfBoundsException e ) { /*
-                                                       * If num < top (ie, fewer
-                                                       * records exist than were
-                                                       * requested) return all
-                                                       */
+        catch ( final IndexOutOfBoundsException e ) { // If num < top (ie, fewer
+                                                      // records exist than were
+                                                      // requested) return all
             return all;
         }
     }
