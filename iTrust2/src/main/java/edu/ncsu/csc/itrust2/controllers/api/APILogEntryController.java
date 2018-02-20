@@ -38,6 +38,9 @@ public class APILogEntryController extends APIController {
      * Retrieves and returns a List of all LogEntries where the given user is
      * primaryUser or secondaryUser
      *
+     * @param user
+     *            user for whom to retrieve logs
+     *
      * @return list of log entries
      */
     @GetMapping ( BASE_PATH + "/logentriesbyuser/{user}" )
@@ -49,6 +52,9 @@ public class APILogEntryController extends APIController {
      * Retrieves and returns a List of all LogEntries where the given user is
      * primaryUser or secondaryUser, sorted by most recent
      *
+     * @param user
+     *            user for whom to retrieve logs
+     *
      * @return list of log entries
      */
     @GetMapping ( BASE_PATH + "/sortedlogsbyuser/{user}" )
@@ -59,6 +65,9 @@ public class APILogEntryController extends APIController {
     /**
      * Retrieves and returns a List of the most recent ten LogEntries where the
      * given user is primaryUser or secondaryUser
+     *
+     * @param user
+     *            user for whom to retrieve logs
      *
      * @return list of log entries
      */

@@ -6,11 +6,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.ncsu.csc.itrust2.forms.admin.UserForm;
-
 /**
  * Controller to manage basic abilities for Admin roles
- * 
+ *
  * @author Kai Presler-Marshall
  *
  */
@@ -20,7 +18,7 @@ public class AdminController {
 
     /**
      * Returns the admin for the given model
-     * 
+     *
      * @param model
      *            model to check
      * @return role
@@ -30,7 +28,7 @@ public class AdminController {
     public String index ( final Model model ) {
         return edu.ncsu.csc.itrust2.models.enums.Role.ROLE_ADMIN.getLanding();
     }
-    
+
     /**
      * View all access logs
      *

@@ -35,6 +35,7 @@
 						function(response) {
 							console.log(response); //
 							$scope.logs = response.data;
+							console.log("number of logs: " + $scope.logs.length); //
 							$scope.message = "log entries retrieved";
 						}, function(rejection) {
 							console.log(rejection); //
