@@ -56,6 +56,18 @@
 						return null;
 					}
 				}
+				$scope.filterLogs = function() {
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
+						function(response) {
+							console.log(response); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "could not display logs";
+						}
+					)
+				}
 			});
 			/*]]>*/
 		</script>
@@ -67,13 +79,11 @@
 						<div class="panel panel-primary">
 							<div class="panel-heading">
 								<h3>Access Log - All Entries</h3>
-								<p>
+								<div>
 									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
 									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
-									<form th:action="" name= "filterlogsbydate" method="post">
-										<button type="submit" class="btn btn- primary btn-sm">Filter Logs</button>
-									</form>
-								</p>
+									<button onclick="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
+								</div>
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">

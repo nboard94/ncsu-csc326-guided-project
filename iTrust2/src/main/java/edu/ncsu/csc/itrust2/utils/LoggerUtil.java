@@ -162,7 +162,7 @@ public class LoggerUtil {
      */
     static public List<LogEntry> getByDateForUser ( final String user, final Date start, final Date end ) {
         final List<LogEntry> all = getSortedForUser( user );
-        // some getWhere bullshit to filter
+        // filter for dates
         return all;
     }
 
