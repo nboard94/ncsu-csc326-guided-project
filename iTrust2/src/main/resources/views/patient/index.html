@@ -29,58 +29,32 @@
 							console.log(rejection); //
 							$scope.message = "you don't exist";
 						}
-					)
-					// get log entries
-					.then(function(){$http.get("/iTrust2/api/v1/tenlogsbyuser/" + $scope.username).then(
-						function(response) {
-							console.log(response); //
-							$scope.logs = response.data;
-							console.log("number of logs: " + $scope.logs.length); //
-							$scope.message = "log entries retrieved";
-						}, function(rejection) {
-							console.log(rejection); //
-							$scope.message = "could not display logs";
-						}
-					)})
-					// put all secondary usernames into array
-					.then(function(){
-						console.log("number of logs: " + $scope.logs.length); //
-						for(i = 0; i < $scope.logs.length; i++) {
-							added = false;
-							for(j = 0; j < $scope.secondary.length; j++) {
-								if($scope.secondary[j][0] == $scope.logs[i].secondaryUser) {
-									added = true;
-								}
-							}
-							if(!added) {
-								console.log("adding to array: " + $scope.logs[i].secondaryUser); //
-								$scope.secondary[$scope.secondary.length][0] = $scope.logs[i].secondaryUser;
-							}
-						}
-					})
-					// get roles for secondary usernames
-					.then(function(){for(i = 0; i < $scope.secondary.length; i++) {
-						$http.get("/iTrust2/api/v1/role/" + $scope.secondary[i][0]).then(
+					).then(function(){
+						// get log entries
+						$http.get("/iTrust2/api/v1/tenlogsbyuser/" + $scope.username).then(
 							function(response) {
 								console.log(response); //
-								$scope.secondary[i][1] = response.data;
-								$scope.message = "role retrieved";
+								$scope.logs = response.data;
+								$scope.message = "log entries retrieved";
 							}, function(rejection) {
 								console.log(rejection); //
-								$scope.message = "error retrieving role";
+								$scope.message = "could not display logs";
 							}
-						);
-					}})
-				}
+						)
+					})
+					
+				};
 				$scope.loadTable();
-				// convert secondary username to role
-				function secondaryToRole(name) {
-					for(i = 0; i < $scope.secondary.length; i++) {
-						if($scope.secondary[i][0] == name) {
-							return $scope.secondary[i][1];
-						}
+				$scope.loadrole = function(primaryRole, secondaryRole) {
+					if(primaryRole != ROLE_PATIENT) {
+						return primaryRole;
 					}
-					return null;
+					else if(secondaryRole != null && secondaryRole != ROLE_PATIENT) {
+						return secondaryRole;
+					}
+					else {
+						return null;
+					}
 				}
 			});
 			/*]]>*/
@@ -94,10 +68,6 @@
 							<div class="panel-heading">
 								<nobr>
 									<h3>Access Log - Recent Entries</h3>
-									<p>
-										Entries from: <input type="text" name="startDate"> to
-										<input type="text" name="endDate">
-									</p>
 								</nobr>
 							</div>
 							<div class="panel-body">
@@ -118,7 +88,7 @@
 											<td name="primaryCell">{{l.primaryUser}}</td>
 											<td name="secondaryCell">{{l.secondaryUser}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="roleCell">{{secondaryToRole(l.secondaryUser)}}</td>
+											<td name="roleCell">{{loadRole(l.primaryRole, l.secondaryRole)}}</td>
 										</tr>
 									</tbody>
 								</table>

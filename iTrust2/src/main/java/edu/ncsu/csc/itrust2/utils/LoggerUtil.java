@@ -1,6 +1,7 @@
 package edu.ncsu.csc.itrust2.utils;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -146,6 +147,23 @@ public class LoggerUtil {
                                                       // requested) return all
             return all;
         }
+    }
+
+    /**
+     * Retrieve all of the Log Entries for a given user within a date span
+     *
+     * @param user
+     *            The User to retrieve log entries for
+     * @param start
+     *            start date to retrieve log entries for
+     * @param end
+     *            end date to retrieve log entries for
+     * @return The List of Log Entries that was found
+     */
+    static public List<LogEntry> getByDateForUser ( final String user, final Date start, final Date end ) {
+        final List<LogEntry> all = getSortedForUser( user );
+        // some getWhere bullshit to filter
+        return all;
     }
 
     /**

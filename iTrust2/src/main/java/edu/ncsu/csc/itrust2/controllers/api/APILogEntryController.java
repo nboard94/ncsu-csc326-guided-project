@@ -1,5 +1,6 @@
 package edu.ncsu.csc.itrust2.controllers.api;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -74,6 +75,23 @@ public class APILogEntryController extends APIController {
     @GetMapping ( BASE_PATH + "/tenlogsbyuser/{user}" )
     public List<LogEntry> getTopTenForUser ( @PathVariable ( "user" ) final String user ) {
         return LoggerUtil.getTopForUser( user, 10 );
+    }
+
+    /**
+     * Retrieves and returns a list of the user's logs within a specified date
+     * range.
+     *
+     * @param start
+     *            start date of logs to retrieve
+     * @param end
+     *            end date of logs to retrieve
+     *
+     * @return list of log entries
+     */
+    @GetMapping ( BASE_PATH + "/userlogsbydate/{user}/{start}/{end}" )
+    public List<LogEntry> getUserLogsByDate ( @PathVariable ( "user" ) final String user,
+            @PathVariable ( "start" ) final Date start, @PathVariable ( "end" ) final Date end ) {
+        return LoggerUtil.getByDateForUser( user, start, end );
     }
 
     /**

@@ -28,50 +28,34 @@
 						}, function(rejection) {
 							console.log(rejection); //
 							$scope.message = "you don't exist";
-						}).then(function(){
-							// get log entries
-							$http.get("/iTrust2/api/v1/sortedlogsbyuser/" + $scope.username).then(
-								function(response) {
-									console.log(response); //
-									$scope.logs = response.data;
-									console.log("number of logs: " + $scope.logs.length); // 
-									$scope.message = "log entries retrieved";
-								}, function(rejection) {
-									console.log(rejection); //
-									$scope.message = "could not display logs";
-								}
-							).then(function(){
-								// put all secondary usernames into array
-								console.log("number of logs: " + $scope.logs.length); //
-								for(i = 0; i < $scope.logs.length; i++) {
-									added = false;
-									for(j = 0; j < $scope.secondary.length; j++) {
-										if($scope.secondary[j][0] == $scope.logs[i].secondaryUser) {
-											added = true;
-										}
-									}
-									if(!added) {
-										console.log("adding to array: " + $scope.logs[i].secondaryUser); //
-										$scope.secondary[$scope.secondary.length][0] = $scope.logs[i].secondaryUser;
-									}
-								}}.then(function(){
-									// get roles for secondary usernames
-									for(i = 0; i < $scope.secondary.length; i++) {
-										$http.get("/iTrust2/api/v1/role/" + $scope.secondary[i][0]).then(
-											function(response) {
-												console.log(response); //
-												$scope.secondary[i][1] = response.data;
-												$scope.message = "role retrieved";
-											}, function(rejection) {
-												console.log(rejection); //
-												$scope.message = "error retrieving role";
-											}
-										);
-									}
-								})
-							);
-						})
+						}
+					).then(function(){
+						// get log entries
+						$http.get("/iTrust2/api/v1/sortedlogsbyuser/" + $scope.username).then(
+							function(response) {
+								console.log(response); //
+								$scope.logs = response.data;
+								$scope.message = "log entries retrieved";
+							}, function(rejection) {
+								console.log(rejection); //
+								$scope.message = "could not display logs";
+							}
+						)
+					})
+					
 				};
+				$scope.loadTable();
+				$scope.loadrole = function(primaryRole, secondaryRole) {
+					if(primaryRole != ROLE_PATIENT) {
+						return primaryRole;
+					}
+					else if(secondaryRole != null && secondaryRole != ROLE_PATIENT) {
+						return secondaryRole;
+					}
+					else {
+						return null;
+					}
+				}
 			});
 			/*]]>*/
 		</script>
@@ -83,6 +67,13 @@
 						<div class="panel panel-primary">
 							<div class="panel-heading">
 								<h3>Access Log - All Entries</h3>
+								<p>
+									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
+									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
+									<form th:action="" name= "filterlogsbydate" method="post">
+										<button type="submit" class="btn btn- primary btn-sm">Filter Logs</button>
+									</form>
+								</p>
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">
@@ -102,7 +93,7 @@
 											<td name="primaryCell">{{l.primaryUser}}</td>
 											<td name="secondaryCell">{{l.secondaryUser}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="roleCell">{{secondaryToRole(l.secondaryUser)}}</td>
+											<td name="roleCell">{{loadRole(l.primaryRole, l.secondaryRole)}}</td>
 										</tr>
 									</tbody>
 								</table>

@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
+import edu.ncsu.csc.itrust2.models.enums.Role;
 import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 
 /**
@@ -57,6 +58,16 @@ public class LogEntry extends DomainObject<LogEntry> {
      * Optional.
      */
     private String          message;
+
+    /**
+     * The role of the primary user.
+     */
+    private Role            primaryRole;
+
+    /**
+     * The role of the secondary user.
+     */
+    private Role            secondaryRole;
 
     /**
      * ID of the LogEntry
@@ -137,6 +148,13 @@ public class LogEntry extends DomainObject<LogEntry> {
         this.setSecondaryUser( secondaryUser );
         this.setMessage( message );
         this.setTime( Calendar.getInstance().getTime() );
+        this.setPrimaryRole( User.getByName( primaryUser ).getRole() );
+        if ( secondaryUser != null ) {
+            this.setSecondaryRole( User.getByName( secondaryUser ).getRole() );
+        }
+        else {
+            this.setSecondaryRole( null );
+        }
     }
 
     /**
@@ -256,5 +274,43 @@ public class LogEntry extends DomainObject<LogEntry> {
      */
     public void setTime ( final Date date ) {
         this.time = date;
+    }
+
+    /**
+     * Sets the role of the primary User for the LogEntry.
+     *
+     * @param role
+     *            Role of the primary User
+     */
+    public void setPrimaryRole ( final Role primaryRole ) {
+        this.primaryRole = primaryRole;
+    }
+
+    /**
+     * Retrieves the Role of the primary User for the LogEntry.
+     *
+     * @return the Role of the primary User
+     */
+    public Role getPrimaryRole () {
+        return primaryRole;
+    }
+
+    /**
+     * Sets the role of the secondary User for the LogEntry.
+     *
+     * @param role
+     *            Role of the secondary User
+     */
+    public void setSecondaryRole ( final Role secondaryRole ) {
+        this.secondaryRole = secondaryRole;
+    }
+
+    /**
+     * Retrieves the Role of the secondary User for the LogEntry.
+     *
+     * @return the Role of the secondary User
+     */
+    public Role getSecondaryRole () {
+        return secondaryRole;
     }
 }
