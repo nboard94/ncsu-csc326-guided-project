@@ -279,7 +279,7 @@ public class LogEntry extends DomainObject<LogEntry> {
     /**
      * Sets the role of the primary User for the LogEntry.
      *
-     * @param role
+     * @param primaryRole
      *            Role of the primary User
      */
     public void setPrimaryRole ( final Role primaryRole ) {
@@ -298,7 +298,7 @@ public class LogEntry extends DomainObject<LogEntry> {
     /**
      * Sets the role of the secondary User for the LogEntry.
      *
-     * @param role
+     * @param secondaryRole
      *            Role of the secondary User
      */
     public void setSecondaryRole ( final Role secondaryRole ) {

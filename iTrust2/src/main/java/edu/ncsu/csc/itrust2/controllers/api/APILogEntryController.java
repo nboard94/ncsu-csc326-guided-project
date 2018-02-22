@@ -81,6 +81,9 @@ public class APILogEntryController extends APIController {
      * Retrieves and returns a list of the user's logs within a specified date
      * range.
      *
+     * @param user
+     *            user for whom to retrieve logs
+     *
      * @param start
      *            start date of logs to retrieve
      * @param end

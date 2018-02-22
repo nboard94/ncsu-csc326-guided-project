@@ -42,20 +42,19 @@
 							}
 						)
 					})
-					
 				};
 				$scope.loadTable();
-				$scope.loadrole = function(primaryRole, secondaryRole) {
-					if(primaryRole != ROLE_PATIENT) {
+				$scope.loadRole = function(primaryRole, secondaryRole) {
+					if(primaryRole != "ROLE_PATIENT") {
 						return primaryRole;
 					}
-					else if(secondaryRole != null && secondaryRole != ROLE_PATIENT) {
+					else if(secondaryRole != null && secondaryRole != "ROLE_PATIENT") {
 						return secondaryRole;
 					}
 					else {
 						return null;
 					}
-				}
+				};
 				$scope.filterLogs = function() {
 					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
 						function(response) {
@@ -67,7 +66,7 @@
 							$scope.message = "could not display logs";
 						}
 					)
-				}
+				};
 			});
 			/*]]>*/
 		</script>
