@@ -245,7 +245,24 @@ public enum TransactionType {
     /**
      * HCP edits patient's demographics
      */
-    PATIENT_DEMOGRAPHICS_EDIT ( 1201, "HCP edits patient's demographics", true );
+    PATIENT_DEMOGRAPHICS_EDIT ( 1201, "HCP edits patient's demographics", true ),
+
+    /**
+     * Email sent for password change notification
+     */
+    EMAIL_PASSWORD_CHANGE_SENT ( 1401, "PW Change Email notification sent", true ),
+    /**
+     * Email sent for appointment request change
+     */
+    EMAIL_APPOINTMENT_REQUEST_SENT ( 1402, "AppointmentRequest Email notification sent", true ),
+    /**
+     * Email sent email lockout notification
+     */
+    EMAIL_ACCOUNT_LOCKOUT_SENT ( 1403, "Account Lockout Email notification sent", true ),
+    /**
+     * Email could not be sent due to missing email address
+     */
+    EMAIL_NOT_SENT ( 1404, "Email notification could not be sent due to missing email address", true );
 
     /**
      * Creates a TransactionType for logging events
