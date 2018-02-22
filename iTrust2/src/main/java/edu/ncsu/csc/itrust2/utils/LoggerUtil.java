@@ -121,7 +121,8 @@ public class LoggerUtil {
     }
 
     /**
-     * Get the top logged events for a single user specified by name.
+     * Get the most recent specified number logged events for a single user
+     * specified by name.
      *
      * @param user
      *            User to find LogEntries for
@@ -162,7 +163,9 @@ public class LoggerUtil {
      */
     static public List<LogEntry> getByDateForUser ( final String user, final Date start, final Date end ) {
         final List<LogEntry> all = getSortedForUser( user );
-        // getWhere to filter for date
+        // return getWhere( createCriterionList(
+
+        // ) );
         return all;
     }
 

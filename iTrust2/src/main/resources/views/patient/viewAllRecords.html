@@ -14,7 +14,6 @@
 				$scope.message = "";
 				$scope.username = "";
 				$scope.logs = [];
-				$scope.secondary = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
 				var added = false;
 				$scope.loadTable = function() {
@@ -41,20 +40,9 @@
 								$scope.message = "could not display logs";
 							}
 						)
-					})
+					});
 				};
 				$scope.loadTable();
-				$scope.loadRole = function(primaryRole, secondaryRole) {
-					if(primaryRole != "ROLE_PATIENT") {
-						return primaryRole;
-					}
-					else if(secondaryRole != null && secondaryRole != "ROLE_PATIENT") {
-						return secondaryRole;
-					}
-					else {
-						return null;
-					}
-				};
 				$scope.filterLogs = function() {
 					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
 						function(response) {
@@ -102,7 +90,7 @@
 											<td name="primaryCell">{{l.primaryUser}}</td>
 											<td name="secondaryCell">{{l.secondaryUser}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="roleCell">{{loadRole(l.primaryRole, l.secondaryRole)}}</td>
+											<td name="roleCell">{{l.message}}</td>
 										</tr>
 									</tbody>
 								</table>
