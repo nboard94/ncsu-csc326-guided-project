@@ -1,5 +1,6 @@
 package edu.ncsu.csc.itrust2.controllers.api;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -163,10 +164,53 @@ public class APILogEntryController extends APIController {
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/userlogsbydate/{user}/{start}/{end}" )
+    @GetMapping ( BASE_PATH + "/userlogsbydate/{user}/{syear}/{smonth}/{sday}/{eyear}/{emonth}/{eday}" )
     public List<LogEntry> getUserLogsByDate ( @PathVariable ( "user" ) final String user,
-            @PathVariable ( "start" ) final Date start, @PathVariable ( "end" ) final Date end ) {
-        return LoggerUtil.getByDateForUser( user, start, end );
+            @PathVariable ( "syear" ) final int syear, @PathVariable ( "smonth" ) final int smonth,
+            @PathVariable ( "sday" ) final int sday, @PathVariable ( "eyear" ) final int eyear,
+            @PathVariable ( "emonth" ) final int emonth, @PathVariable ( "eday" ) final int eday ) {
+        final Calendar s = Calendar.getInstance();
+        final Calendar e = Calendar.getInstance();
+        s.set( syear, smonth, sday, 0, 0, 0 );
+        e.set( eyear, emonth, eday, 0, 0, 0 );
+        final Date start = s.getTime();
+        final Date end = e.getTime();
+        final List<LogEntry> logs = LogEntry.getByDateForUser( user, start, end );
+        for ( int i = 0; i < logs.size(); i++ ) {
+            final LogEntry entry = logs.get( i );
+            final Role primRole = User.getByName( entry.getPrimaryUser() ).getRole();
+            Role secRole = null;
+            if ( entry.getSecondaryUser() != null ) {
+                secRole = User.getByName( entry.getSecondaryUser() ).getRole();
+            }
+            if ( primRole != Role.ROLE_PATIENT ) {
+                if ( primRole == Role.ROLE_ADMIN ) {
+                    entry.setMessage( "ROLE_ADMIN" );
+                }
+                else if ( primRole == Role.ROLE_HCP ) {
+                    entry.setMessage( "ROLE_HCP" );
+                }
+                else {
+                    entry.setMessage( "" );
+                }
+            }
+            else if ( secRole != null && secRole != Role.ROLE_PATIENT ) {
+                if ( secRole == Role.ROLE_ADMIN ) {
+                    entry.setMessage( "ROLE_ADMIN" );
+                }
+                else if ( secRole == Role.ROLE_HCP ) {
+                    entry.setMessage( "ROLE_HCP" );
+                }
+                else {
+                    entry.setMessage( "" );
+                }
+            }
+            else {
+                entry.setMessage( "" );
+            }
+            logs.set( i, entry );
+        }
+        return logs;
     }
 
     /**

@@ -1,14 +1,13 @@
 package edu.ncsu.csc.itrust2.utils;
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 import edu.ncsu.csc.itrust2.models.persistent.LogEntry;
-import edu.ncsu.csc.itrust2.models.persistent.User;
+import edu.ncsu.csc.itrust2.models.persistent.User;;
 
 /**
  * Logging class to handle saving log-worthy events and for retrieving those
@@ -109,15 +108,15 @@ public class LoggerUtil {
      * @return A List of the LogEntry Entries for the user.
      */
     static public List<LogEntry> getSortedForUser ( final String user ) {
-        final List<LogEntry> all = getAllForUser( user );
-        all.sort( new Comparator<Object>() {
+        final List<LogEntry> logs = getAllForUser( user );
+        logs.sort( new Comparator<Object>() {
             @Override
             public int compare ( final Object arg0, final Object arg1 ) {
                 return -1 * ( ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() ) );
             }
 
         } );
-        return all;
+        return logs;
     }
 
     /**
@@ -132,8 +131,8 @@ public class LoggerUtil {
      *         Entries is less than `top`, returns all
      */
     static public List<LogEntry> getTopForUser ( final String user, final Integer top ) {
-        final List<LogEntry> all = getAllForUser( user );
-        all.sort( new Comparator<Object>() {
+        final List<LogEntry> logs = getAllForUser( user );
+        logs.sort( new Comparator<Object>() {
             @Override
             public int compare ( final Object arg0, final Object arg1 ) {
                 return -1 * ( ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() ) );
@@ -141,32 +140,13 @@ public class LoggerUtil {
 
         } );
         try {
-            return all.subList( 0, top );
+            return logs.subList( 0, top );
         }
         catch ( final IndexOutOfBoundsException e ) { // If num < top (ie, fewer
                                                       // records exist than were
                                                       // requested) return all
-            return all;
+            return logs;
         }
-    }
-
-    /**
-     * Retrieve all of the Log Entries for a given user within a date span
-     *
-     * @param user
-     *            The User to retrieve log entries for
-     * @param start
-     *            start date to retrieve log entries for
-     * @param end
-     *            end date to retrieve log entries for
-     * @return The List of Log Entries that was found
-     */
-    static public List<LogEntry> getByDateForUser ( final String user, final Date start, final Date end ) {
-        final List<LogEntry> all = getSortedForUser( user );
-        // return getWhere( createCriterionList(
-
-        // ) );
-        return all;
     }
 
     /**

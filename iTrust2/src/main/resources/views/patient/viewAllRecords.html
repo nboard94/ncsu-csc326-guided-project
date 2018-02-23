@@ -44,7 +44,15 @@
 				};
 				$scope.loadTable();
 				$scope.filterLogs = function() {
-					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
+					console.log($scope.startDate); //
+					console.log($scope.startDate.getYear()); //
+					console.log($scope.startDate.getMonth()); //
+					console.log($scope.startDate.getDay()); //
+					console.log($scope.endDate); //
+					console.log($scope.endDate.getYear()); //
+					console.log($scope.endDate.getMonth()); //
+					console.log($scope.endDate.getDay()); //
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate.getYear() + "/" + $scope.startDate.getMonth() + "/" + $scope.startDate.getDay() + "/" + $scope.endDate.getYear() + "/" + $scope.endDate.getMonth() + "/" + $scope.endDate.getDay()).then(
 						function(response) {
 							console.log(response); //
 							$scope.logs = response.data;
@@ -69,7 +77,7 @@
 								<div>
 									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
 									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
-									<button onclick="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
+									<button ng-click="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
 								</div>
 							</div>
 							<div class="panel-body">

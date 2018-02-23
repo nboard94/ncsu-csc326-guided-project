@@ -250,6 +250,20 @@ public abstract class DomainObject <D extends DomainObject<D>> {
     }
 
     /**
+     * Adds a Criterion to a Criterion List and returns the new list.
+     * 
+     * @param list
+     *            list to add to
+     * @param c
+     *            Criterion to add
+     * @return the new list
+     */
+    protected static List<Criterion> addCriterionToList ( final List<Criterion> list, final Criterion c ) {
+        list.add( c );
+        return list;
+    }
+
+    /**
      * Creates a Criterion and wraps it in a SingletonList. Works like
      * {@link #createCriterion}, but the result comes out as a List to pass to
      * getWhere directly.
