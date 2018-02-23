@@ -3,6 +3,7 @@ package edu.ncsu.csc.itrust2.config;
 import java.io.IOException;
 import java.util.Calendar;
 
+import javax.mail.MessagingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,10 +15,13 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import edu.ncsu.csc.itrust2.models.enums.TransactionType;
+import edu.ncsu.csc.itrust2.models.persistent.LoginAttempt;
 import edu.ncsu.csc.itrust2.models.persistent.LoginBan;
 import edu.ncsu.csc.itrust2.models.persistent.LoginLockout;
-import edu.ncsu.csc.itrust2.models.persistent.LoginAttempt;
+import edu.ncsu.csc.itrust2.models.persistent.Patient;
+import edu.ncsu.csc.itrust2.models.persistent.Personnel;
 import edu.ncsu.csc.itrust2.models.persistent.User;
+import edu.ncsu.csc.itrust2.utils.EmailUtil;
 import edu.ncsu.csc.itrust2.utils.LoggerUtil;
 
 /**
@@ -93,6 +97,46 @@ public class FailureHandler extends SimpleUrlAuthenticationFailureHandler {
                         ban.setUser( user );
                         ban.save();
                         LoggerUtil.log( TransactionType.USER_BANNED, username, null, username + " has been banned." );
+
+                        String email = "";
+                        String firstName = "";
+                        final Personnel person = Personnel.getByName( user );
+                        if ( person != null ) {
+                            email = person.getEmail();
+                            firstName = person.getFirstName();
+                        }
+                        else {
+                            final Patient patient = Patient.getPatient( user );
+                            if ( patient != null ) {
+                                email = patient.getEmail();
+                                firstName = patient.getFirstName();
+                            }
+                            else {
+                                try {
+                                    throw new Exception( "No Patient or Personnel on file for " + user.getId() );
+                                }
+                                catch ( final Exception e ) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        String body = "Hello " + firstName
+                                + ", \n\nYour account has been banned from the iTrust2 system.\n";
+                        body += "\nIf you feel this is in error, please contact a system administrator.\n\n--iTrust2 Admin";
+
+                        try {
+                            EmailUtil.sendEmail( email, "Your account has been banned from iTrust2", body );
+                            LoggerUtil.log( TransactionType.EMAIL_ACCOUNT_LOCKOUT_SENT, user.getUsername(),
+                                    "Email informing user " + user.getUsername()
+                                            + " of account ban successfully sent" );
+                        }
+                        catch ( final MessagingException e ) {
+                            LoggerUtil.log( TransactionType.EMAIL_NOT_SENT, user.getUsername(),
+                                    "Account ban email could not be sent for user " + user.getUsername() );
+                        }
+
                         this.getRedirectStrategy().sendRedirect( request, response, "/login?banned" );
                     }
                     else {
@@ -103,6 +147,47 @@ public class FailureHandler extends SimpleUrlAuthenticationFailureHandler {
                         lock.save();
                         LoggerUtil.log( TransactionType.USER_LOCKOUT, username, null,
                                 username + " has been locked out for 1 hour." );
+
+                        String email = "";
+                        String firstName = "";
+                        final Personnel person = Personnel.getByName( user );
+                        if ( person != null ) {
+                            email = person.getEmail();
+                            firstName = person.getFirstName();
+                        }
+                        else {
+                            final Patient patient = Patient.getPatient( user );
+                            if ( patient != null ) {
+                                email = patient.getEmail();
+                                firstName = patient.getFirstName();
+                            }
+                            else {
+                                try {
+                                    throw new Exception( "No Patient or Personnel on file for " + user.getId() );
+                                }
+                                catch ( final Exception e ) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        String body = "Hello " + firstName
+                                + ", \n\nYour account has been locked out of the iTrust2 system for one hour.\n";
+                        body += "\nIf you feel this is in error, please contact a system administrator.\n\n--iTrust2 Admin";
+
+                        try {
+                            EmailUtil.sendEmail( email, "Your account has been locked out of the iTrust2 system",
+                                    body );
+                            LoggerUtil.log( TransactionType.EMAIL_ACCOUNT_LOCKOUT_SENT, user.getUsername(),
+                                    "Email informing user " + user.getUsername()
+                                            + " of account lockout successfully sent" );
+                        }
+                        catch ( final MessagingException e ) {
+                            LoggerUtil.log( TransactionType.EMAIL_NOT_SENT, user.getUsername(),
+                                    "Account lockout email could not be sent for user " + user.getUsername() );
+                        }
+
                         this.getRedirectStrategy().sendRedirect( request, response, "/login?locked" );
                     }
                     return;

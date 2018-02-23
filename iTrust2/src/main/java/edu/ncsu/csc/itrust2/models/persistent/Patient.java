@@ -73,7 +73,6 @@ public class Patient extends DomainObject<Patient> implements Serializable {
                     .get( 0 );
         }
         catch ( final Exception e ) {
-            System.out.println( "Patient.getpatient(username) fail" ); //
             return null;
         }
     }
@@ -100,7 +99,6 @@ public class Patient extends DomainObject<Patient> implements Serializable {
      * @return the corresponding patient record
      */
     public static Patient getPatient ( final User user ) {
-        System.out.println( user.getUsername() ); //
         return getPatient( user.getUsername() );
     }
 
