@@ -11,19 +11,50 @@
 			/*<![CDATA[*/
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
+				$scope.message = "";
+				$scope.username = "";
 				$scope.logs = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
+				var added = false;
 				$scope.loadTable = function() {
-					$http.get("/iTrust2/api/v1/logentries").then(
+					// get current username
+					$http.get("/iTrust2/api/v1/username").then(
+						function(response) {
+							console.log(response); //
+							$scope.username = response.data.message;
+							$scope.message = "user retrieved";
+							console.log($scope.username); //
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "you don't exist";
+						}
+					).then(function(){
+						// get log entries
+						$http.get("/iTrust2/api/v1/sortedlogsbyuser/" + $scope.username).then(
 							function(response) {
+								console.log(response); //
 								$scope.logs = response.data;
-								$scope.message = "";
+								$scope.message = "log entries retrieved";
 							}, function(rejection) {
-								$scope.logs = [];
-								$scope.message = "Could not display logs";
-							});
-				}
+								console.log(rejection); //
+								$scope.message = "could not display logs";
+							}
+						)
+					});
+				};
 				$scope.loadTable();
+				$scope.filterLogs = function() {
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
+						function(response) {
+							console.log(response); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "could not display logs";
+						}
+					)
+				};
 			});
 			/*]]>*/
 		</script>
@@ -35,27 +66,31 @@
 						<div class="panel panel-primary">
 							<div class="panel-heading">
 								<h3>Access Log - All Entries</h3>
+								<div>
+									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
+									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
+									<button onclick="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
+								</div>
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">
-									<caption>My Logs:</caption>
 									<thead>
 										<tr>
-											<th>logCode</th>
-											<th>primaryUser</th>
-											<th>time</th>
-											<th>secondaryUser</th>
-											<th>message</th>
+											<th>Transaction Type</th>
+											<th>Primary User</th>
+											<th>Secondary User</th>
+											<th>Date and Time</th>
+											<th>Role</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr name="logTableRow"
-											ng-repeat="l in logs | orderBy:'-time'">
-											<td name="logCodeCell">{{l.logCode}}</td>
-											<td name="primaryUserCell">{{l.primaryUser}}</td>
+											ng-repeat="l in logs">
+											<td name="transactionTypeCell">{{l.logCode}}</td>
+											<td name="primaryCell">{{l.primaryUser}}</td>
+											<td name="secondaryCell">{{l.secondaryUser}}</td>
 											<td name="timeCell">{{l.time}}</td>
-											<td name="secondaryUserCell">{{l.secondaryUser}}</td>
-											<td name="messageCell">{{l.message}}</td>
+											<td name="roleCell">{{l.message}}</td>
 										</tr>
 									</tbody>
 								</table>
