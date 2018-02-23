@@ -4,7 +4,12 @@
 </head>
 <body th:include="layout :: body" th:with="content=~{::content}">
 	<div th:fragment="content">
+
 		<h1>Welcome to iTrust2 - Admin</h1>
+		<form th:action="@{/admin/viewAllRecords}" name= "fname" method="get"> <button type="submit" class="btn btn- primary btn-sm">View All Records</button>
+		</form>
+
 	</div>
 </body>
+
 </html>

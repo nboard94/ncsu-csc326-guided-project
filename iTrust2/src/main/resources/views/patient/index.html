@@ -11,47 +11,38 @@
 			/*<![CDATA[*/
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
+				$scope.message = "";
+				$scope.username = "";
 				$scope.logs = [];
-				secondary = [];
 				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
+				var added = false;
 				$scope.loadTable = function() {
-					$http.get("/iTrust2/api/v1/logentries").then(
+					// get current username
+					$http.get("/iTrust2/api/v1/username").then(
 						function(response) {
-							$scope.logs = response.data;
-							$scope.message = "";
+							console.log(response); //
+							$scope.username = response.data.message;
+							$scope.message = "user retrieved";
+							console.log($scope.username); //
 						}, function(rejection) {
-							$scope.logs = [];
-							$scope.message = "Could not display logs";
+							console.log(rejection); //
+							$scope.message = "you don't exist";
 						}
-					);
-					for(i = 0; i < $scope.logs.length; i++) {
-						for(j = 0; j < secondary.length; j++) {
-							if(secondary[j][0] == scope.logs[i].secondaryUser) {
-								break;
-							}
-						}
-						secondary[secondary.length][0] = $scope.logs[i].secondaryUser;
-					}
-					for(i = 0; i < secondary.length; i++) {
-						$http.get("/iTrust2/api/v1/role/{secondary[i][0]}").then(
+					).then(function(){
+						// get log entries
+						$http.get("/iTrust2/api/v1/tenlogsbyuser/" + $scope.username).then(
 							function(response) {
-								secondary[i][1] = response.data;
-								$scope.message = "";
+								console.log(response); //
+								$scope.logs = response.data;
+								$scope.message = "log entries retrieved";
 							}, function(rejection) {
-								$scope.message = "error retrieving role";
+								console.log(rejection); //
+								$scope.message = "could not display logs";
 							}
-						);
-					}
-				}
+						)
+					});
+				};
 				$scope.loadTable();
-				function secondaryToRole(name) {
-					for(i = 0; i < secondary.length; i++) {
-						if(secondary[i][0] == name) {
-							return secondary[i][1];
-						}
-					}
-					return null;
-				}
 			});
 			/*]]>*/
 		</script>
@@ -64,29 +55,27 @@
 							<div class="panel-heading">
 								<nobr>
 									<h3>Access Log - Recent Entries</h3>
-									<p>
-										Entries from: <input type="text" name="startDate"> to
-										<input type="text" name="endDate">
-									</p>
 								</nobr>
 							</div>
 							<div class="panel-body">
 								<table class="table table-bordered">
 									<thead>
 										<tr>
-											<th>Name</th>
-											<th>Role</th>
-											<th>Date and Time</th>
 											<th>Transaction Type</th>
+											<th>Primary User</th>
+											<th>Secondary User</th>
+											<th>Date and Time</th>
+											<th>Role</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr name="logTableRow"
-											ng-repeat="l in logs | limitTo:10 | orderBy:'-time'">
-											<td name="nameCell">{{l.primaryUser}}</td>
-											<td name="roleCell">{{secondaryToRole(l.secondaryUser)}}</td>
-											<td name="timeCell">{{l.time}}</td>
+											ng-repeat="l in logs">
 											<td name="transactionTypeCell">{{l.logCode}}</td>
+											<td name="primaryCell">{{l.primaryUser}}</td>
+											<td name="secondaryCell">{{l.secondaryUser}}</td>
+											<td name="timeCell">{{l.time}}</td>
+											<td name="roleCell">{{l.message}}</td>
 										</tr>
 									</tbody>
 								</table>
@@ -97,8 +86,8 @@
 			</div>
 		</div>
 
-		<form action="/iTrust2/patient/viewAllRecords">
-			<input type="submit" value="View All Entries" />
+		<form th:action="@{/patient/viewAllRecords}" name= "fname" method="get">
+			<button type="submit" class="btn btn- primary btn-sm">View All Records</button>
 		</form>
 	</div>
 </body>

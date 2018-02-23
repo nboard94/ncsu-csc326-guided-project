@@ -5,15 +5,6 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.Scanner;
-
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Store;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +42,7 @@ public class APIPasswordTest {
 
     @Autowired
     private WebApplicationContext context;
-
+    private PasswordResetToken token;
     /**
      * Sets up test
      */
@@ -104,6 +95,9 @@ public class APIPasswordTest {
         user = User.getByName( "patientPW" ); // reload so changes are visible
         assertFalse( pe.matches( "123456", user.getPassword() ) );
         assertTrue( pe.matches( "654321", user.getPassword() ) );
+        
+        changePassword(user, "", "123456");
+        assertTrue( pe.matches( "654321", user.getPassword() ) );
 
         final Personnel p = Personnel.getByName( user );
         p.delete();
@@ -112,8 +106,7 @@ public class APIPasswordTest {
     }
 
     /**
-     * This tests that invalid api requests fail. Invalid passwords and
-     * expiration testing handled in unit tests.
+     * This tests that a valid reset request is sent.
      *
      * @throws Exception
      */
@@ -135,85 +128,13 @@ public class APIPasswordTest {
                 .content( "patientPW" ) ).andExpect( status().isBadRequest() );
 
     }
-    /*
-     * Credit for checking email:
-     * https://www.tutorialspoint.com/javamail_api/javamail_api_checking_emails.
-     * htm
+
+    /**
+     * This tests that invalid api requests fail. Invalid passwords and
+     * expiration testing handled in unit tests.
+     *
+     * @throws Exception
      */
-//    private PasswordResetToken getTokenFromEmail () {
-//        final String username = "csc326s182034@gmail.com";
-//        final String password = "csc326s182034@gmail.com";
-//        final String host = "smtp.gmail.com";
-//        PasswordResetToken token = null;
-//        try {
-//            // create properties field
-//            final Properties properties = new Properties();
-//            properties.put( "mail.store.protocol", "pop3" );
-//            properties.put( "mail.pop3.host", host );
-//            properties.put( "mail.pop3.port", "995" );
-//            properties.put( "mail.pop3.starttls.enable", "true" );
-//            final Session emailSession = Session.getDefaultInstance( properties );
-//            // emailSession.setDebug(true);
-//
-//            // create the POP3 store object and connect with the pop server
-//            final Store store = emailSession.getStore( "pop3s" );
-//
-//            store.connect( host, username, password );
-//
-//            // create the folder object and open it
-//            final Folder emailFolder = store.getFolder( "INBOX" );
-//            emailFolder.open( Folder.READ_WRITE );
-//
-//            // retrieve the messages from the folder in an array and print it
-//            final Message[] messages = emailFolder.getMessages();
-//            Arrays.sort( messages, ( x, y ) -> {
-//                try {
-//                    return y.getSentDate().compareTo( x.getSentDate() );
-//                }
-//                catch ( final MessagingException e ) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//                return 0;
-//            } );
-//            for ( final Message message : messages ) {
-//                // SUBJECT
-//                if ( message.getSubject() != null && message.getSubject().contains( "iTrust2 Password Reset" ) ) {
-//                    String content = (String) message.getContent();
-//                    content = content.replaceAll( "\r", "" ); // Windows
-//                    content = content.substring( content.indexOf( "?tkid=" ) );
-//
-//                    final Scanner scan = new Scanner( content.substring( 6, content.indexOf( '\n' ) ) );
-//                    System.err.println( "token(" + content.substring( 6, content.indexOf( '\n' ) ) + ")end" );
-//                    final long tokenId = scan.nextLong();
-//                    scan.close();
-//
-//                    content = content.substring( content.indexOf( "temporary password: " ) );
-//                    content = content.substring( 20, content.indexOf( "\n" ) );
-//                    content.trim();
-//
-//                    if ( content.endsWith( "\n" ) ) {
-//                        content = content.substring( content.length() - 1 );
-//                    }
-//
-//                    token = new PasswordResetToken();
-//                    token.setId( tokenId );
-//                    token.setTempPasswordPlaintext( content );
-//                    break;
-//                }
-//            }
-//
-//            // close the store and folder objects
-//            emailFolder.close( false );
-//            store.close();
-//            return token;
-//        }
-//        catch ( final Exception e ) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-    
     @WithMockUser ( username = "patientPW", roles = { "USER", "ADMIN" } )
     @Test
     public void testValidRequestReset () throws Exception {
@@ -242,15 +163,36 @@ public class APIPasswordTest {
         assertTrue( pe.matches( "123456", user.getPassword() ) );
         mvc.perform( post( "/api/v1/requestPasswordReset" ).contentType( MediaType.APPLICATION_JSON )
                 .content( user.getUsername() ) ).andExpect( status().isOk() );
-//        final PasswordChangeForm pchange = new PasswordChangeForm();
-//        PasswordResetToken tokenId = new PasswordResetToken();
-//        tokenId = getTokenFromEmail();
-       
-//        mvc.perform( post( "/api/v1/resetPassword/?tkid=" + tokenId.getId() ).contentType( MediaType.APPLICATION_JSON )
-//                .content( TestUtils.asJsonString( pchange ) ) ).andExpect( status().isOk() );
+        
+       // User user2 = null;
+       // user.save();
+        mvc.perform( post( "/api/v1/requestPasswordReset" ).contentType( MediaType.APPLICATION_JSON )
+                .content( user.getUsername() ) ).andExpect( status().isOk() );
+        
+        token = PasswordResetToken.lastToken;
+        Long id = token.getId();
+        assertTrue( pe.matches( "123456", user.getPassword() ) );
+//        final String pw = "123456";
+        final String newP = "654321";
+        final PasswordChangeForm form = new PasswordChangeForm();
+        form.setCurrentPassword( token.getTempPassword() );
+        form.setNewPassword( newP );
+        form.setNewPassword2( newP );
+        
+        mvc.perform( post( "/api/v1/resetPassword/" + id ).contentType( MediaType.APPLICATION_JSON )
+                .content( TestUtils.asJsonString( form ) ) ).andExpect( status().isOk() );
+
+        mvc.perform( post( "/api/v1/requestPasswordReset" ).contentType( MediaType.APPLICATION_JSON )
+                .content( user.getUsername() ) ).andExpect( status().isOk() );
+        
+        mvc.perform( post( "/api/v1/resetPassword/" + id ).contentType( MediaType.APPLICATION_JSON )
+                .content( TestUtils.asJsonString( form ) ) ).andExpect( status().isBadRequest() );
+    
         final Personnel p = Personnel.getByName( user );
         p.delete();
-        user.delete();
+     //   user.delete();
     }
+    
+  
 
 }
