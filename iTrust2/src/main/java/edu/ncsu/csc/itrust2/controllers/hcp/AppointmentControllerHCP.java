@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import javax.mail.MessagingException;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,9 @@ import edu.ncsu.csc.itrust2.forms.patient.AppointmentRequestForm;
 import edu.ncsu.csc.itrust2.models.enums.Status;
 import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 import edu.ncsu.csc.itrust2.models.persistent.AppointmentRequest;
+import edu.ncsu.csc.itrust2.models.persistent.Patient;
+import edu.ncsu.csc.itrust2.models.persistent.Personnel;
+import edu.ncsu.csc.itrust2.utils.EmailUtil;
 import edu.ncsu.csc.itrust2.utils.LoggerUtil;
 
 /**
@@ -68,10 +73,11 @@ public class AppointmentControllerHCP {
      * @param form
      *            Form from the user to parse
      * @return Page to display to the user
+     * @throws Exception
      */
     @PostMapping ( "/hcp/viewAppointmentRequests" )
     @PreAuthorize ( "hasRole('ROLE_HCP')" )
-    public String appointmentActionSubmit ( @ModelAttribute final AppointmentForm form ) {
+    public String appointmentActionSubmit ( @ModelAttribute final AppointmentForm form ) throws Exception {
         final int id = Integer.parseInt( form.getAppointment() );
         final String action = form.getAction();
         final AppointmentRequest ar = AppointmentRequest.getById( Long.valueOf( id ) );
@@ -81,6 +87,57 @@ public class AppointmentControllerHCP {
         LoggerUtil.log(
                 aptAction ? TransactionType.APPOINTMENT_REQUEST_DENIED : TransactionType.APPOINTMENT_REQUEST_APPROVED,
                 ar.getHcp().getUsername(), ar.getPatient().getUsername() );
+
+        String email = "";
+        String firstName = "";
+        final Personnel person = Personnel.getByName( ar.getPatient().getUsername() );
+        if ( person != null ) {
+            email = person.getEmail();
+            firstName = person.getFirstName();
+        }
+        else {
+            final Patient patient = Patient.getPatient( ar.getPatient().getUsername() );
+            if ( patient != null ) {
+                email = patient.getEmail();
+                firstName = patient.getFirstName();
+            }
+            else {
+                throw new Exception( "No Patient or Personnel on file for " + ar.getPatient().getUsername() );
+            }
+        }
+
+        if ( aptAction ) {
+            String body = "Hello " + firstName + ", \n\nYour request for an appointment has been rejected.\n";
+            body += "\nIf you feel this is in error, please contact your healthcare provider.\n\n--iTrust2 Admin";
+
+            try {
+                EmailUtil.sendEmail( email, "Your appointment request status", body );
+                LoggerUtil.log( TransactionType.EMAIL_APPOINTMENT_REQUEST_SENT, ar.getPatient().getUsername(),
+                        ar.getHcp().getUsername(), ar.getHcp().getUsername()
+                                + " has rejected the appointment request from user " + ar.getPatient().getUsername() );
+            }
+            catch ( final MessagingException e ) {
+                LoggerUtil.log( TransactionType.EMAIL_NOT_SENT, ar.getPatient().getUsername(),
+                        "Appointment request email could not be sent for user " + ar.getPatient().getUsername() );
+            }
+
+        }
+        else {
+            String body = "Hello " + firstName + ", \n\nYour request for an appointment has been approved.\n";
+            body += "\nThank you for using iTrust2.\n\n--iTrust2 Admin";
+
+            try {
+                EmailUtil.sendEmail( email, "Your appointment request status", body );
+                LoggerUtil.log( TransactionType.EMAIL_APPOINTMENT_REQUEST_SENT, ar.getPatient().getUsername(),
+                        ar.getHcp().getUsername(), ar.getHcp().getUsername()
+                                + " has approved the appointment request from user " + ar.getPatient().getUsername() );
+            }
+            catch ( final MessagingException e ) {
+                LoggerUtil.log( TransactionType.EMAIL_NOT_SENT, ar.getPatient().getUsername(),
+                        "Appointment request email could not be sent for user " + ar.getPatient().getUsername() );
+            }
+        }
+
         return "hcp/viewAppointmentRequestsResult";
     }
 
@@ -111,23 +168,4 @@ public class AppointmentControllerHCP {
         return "hcp/viewAppointments";
     }
 
-    /**
-     * View all access logs
-     *
-     * @param model
-     *            data for front end
-     * @return mapping
-     */
-    /**
-     * On a GET request to /viewAllRecords, the AppointmentControllerHCP will return
-     * /src/main/resources/views/hcp/viewAllRecords.html.
-     *
-     * @param model
-     *            underlying UI model
-     * @return contents of the page
-     */
-    @GetMapping ( "hcp/viewAllRecords" )
-    public String viewAllRecords ( final Model model ) {
-        return "hcp/viewAllRecords";
-    }
 }

@@ -91,7 +91,7 @@ public class PasswordChangeForm {
             token.delete();
             throw new IllegalArgumentException( "This temporary password has expired." );
         }
-        if ( !pe.matches( getCurrentPassword(), token.getTempPassword()) && !getCurrentPassword().equals(token.getTempPassword()) ) {
+        if ( !pe.matches( getCurrentPassword(), token.getTempPassword() ) ) {
             throw new IllegalArgumentException( "Incorrect temporary password." );
         }
         // possibility of hash collision false positive.
