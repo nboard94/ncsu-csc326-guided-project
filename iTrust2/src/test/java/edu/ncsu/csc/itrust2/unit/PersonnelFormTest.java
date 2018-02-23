@@ -36,6 +36,7 @@ public class PersonnelFormTest {
         person.setSpecialty( "special" );
         person.setEmail( "email@email.com" );
         person.setId( 1L );
+        person.setEnabled(5);
         final PersonnelForm form = new PersonnelForm( person );
         assertEquals( "username", form.getSelf() );
         assertEquals( "first", form.getFirstName() );
@@ -49,5 +50,22 @@ public class PersonnelFormTest {
         assertEquals( "special", form.getSpecialty() );
         assertEquals( "email@email.com", form.getEmail() );
         assertEquals( "1", form.getId() );
+        assertEquals("5", form.getEnabled());
+        final User u = new User();
+        u.setUsername("username");
+ //       final PersonnelForm form2 = new PersonnelForm(u);
+//        assertEquals(form2.getId(), "username");
+  //      form2.setEnabled("enabled");
+    //    assertEquals(form2.getEnabled(), "enabled");
+        
+        Personnel empty = null;
+        PersonnelForm form3 = new PersonnelForm(empty);
+        assertEquals(form3.getFirstName(), null);
+        empty = new Personnel();
+        empty.setEnabled(1);
+      //  PersonnelForm form4 = new PersonnelForm(empty);
+ 
+        //assertEquals(form4.getEnabled(), "1");
+        
     }
 }
