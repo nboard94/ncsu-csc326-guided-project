@@ -2,8 +2,8 @@ package edu.ncsu.csc.itrust2.models.persistent;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.Criteria;
@@ -246,7 +246,23 @@ public abstract class DomainObject <D extends DomainObject<D>> {
      * @return The List that results
      */
     protected static List<Criterion> createCriterionList ( final Criterion c ) {
-        return Collections.singletonList( c );
+        final ArrayList list = new ArrayList();
+        list.add( c );
+        return list;
+    }
+
+    /**
+     * Adds a Criterion to a Criterion List and returns the new list.
+     *
+     * @param list
+     *            list to add to
+     * @param c
+     *            Criterion to add
+     * @return the new list
+     */
+    protected static List<Criterion> addCriterionToList ( final List<Criterion> list, final Criterion c ) {
+        list.add( c );
+        return list;
     }
 
     /**

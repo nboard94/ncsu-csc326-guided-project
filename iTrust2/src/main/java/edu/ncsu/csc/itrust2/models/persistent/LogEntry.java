@@ -119,6 +119,26 @@ public class LogEntry extends DomainObject<LogEntry> {
     }
 
     /**
+     * Retrieve all LogEntries where the user provided was either the primary or
+     * secondary user on the LogEntry, and where the date is between the two
+     * given dates.
+     *
+     * @param user
+     *            The user to match on
+     * @param start
+     *            start date
+     * @param end
+     *            end date
+     * @return All matching LogEntries
+     */
+    public static List<LogEntry> getByDateForUser ( final String user, final Date start, final Date end ) {
+        final List<Criterion> list = createCriterionList(
+                Restrictions.or( createCriterion( "primaryUser", user ), createCriterion( "secondaryUser", user ) ) );
+        addCriterionToList( list, Restrictions.between( "time", start, end ) );
+        return getWhere( list );
+    }
+
+    /**
      * Create a LogEntry from the most complete set of information.
      *
      * @param code

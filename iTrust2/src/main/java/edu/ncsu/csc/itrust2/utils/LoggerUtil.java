@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 import edu.ncsu.csc.itrust2.models.persistent.LogEntry;
-import edu.ncsu.csc.itrust2.models.persistent.User;
+import edu.ncsu.csc.itrust2.models.persistent.User;;
 
 /**
  * Logging class to handle saving log-worthy events and for retrieving those
@@ -100,18 +100,36 @@ public class LoggerUtil {
     }
 
     /**
-     * Get the top logged events for a single user specified by name.
+     * Get the logged events for the currently logged in user, sorted by most
+     * recent.
      *
-     * @param user
-     *            User to find LogEntries for
+     * @return A List of the LogEntry Entries for the user.
+     */
+    static public List<LogEntry> getSortedForUser () {
+        final String user = currentUser();
+        final List<LogEntry> logs = getAllForUser( user );
+        logs.sort( new Comparator<Object>() {
+            @Override
+            public int compare ( final Object arg0, final Object arg1 ) {
+                return -1 * ( ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() ) );
+            }
+
+        } );
+        return logs;
+    }
+
+    /**
+     * Get the most recent specified number logged events for the currently
+     * logged in user.
+     *
      * @param top
      *            Number of events to find
      * @return A List of the LogEntry Entries for the user. If the number of
      *         Entries is less than `top`, returns all
      */
     static public List<LogEntry> getTopForUser ( final String user, final Integer top ) {
-        final List<LogEntry> all = getAllForUser( user );
-        all.sort( new Comparator<Object>() {
+        final List<LogEntry> logs = getAllForUser( user );
+        logs.sort( new Comparator<Object>() {
             @Override
             public int compare ( final Object arg0, final Object arg1 ) {
                 return ( (LogEntry) arg0 ).getTime().compareTo( ( (LogEntry) arg1 ).getTime() );
@@ -119,14 +137,12 @@ public class LoggerUtil {
 
         } );
         try {
-            return all.subList( 0, top );
+            return logs.subList( 0, top );
         }
-        catch ( final IndexOutOfBoundsException e ) { /*
-                                                       * If num < top (ie, fewer
-                                                       * records exist than were
-                                                       * requested) return all
-                                                       */
-            return all;
+        catch ( final IndexOutOfBoundsException e ) { // If num < top (ie, fewer
+                                                      // records exist than were
+                                                      // requested) return all
+            return logs;
         }
     }
 

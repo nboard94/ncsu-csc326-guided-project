@@ -11,38 +11,21 @@
 			/*<![CDATA[*/
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
+				$scope.message = "";
 				$scope.logs = [];
-				secondary = [];
-				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
 				$scope.loadTable = function() {
-					$http.get("/iTrust2/api/v1/logentries").then(
+					// get log entries
+					$http.get("/iTrust2/api/v1/tenlogsbyuser/").then(
 						function(response) {
+							console.log(response); //
 							$scope.logs = response.data;
-							$scope.message = "";
+							$scope.message = "log entries retrieved";
 						}, function(rejection) {
-							$scope.logs = [];
-							$scope.message = "Could not display logs";
+							console.log(rejection); //
+							$scope.message = "could not display logs";
 						}
-					);
-					for(i = 0; i < $scope.logs.length; i++) {
-						for(j = 0; j < secondary.length; j++) {
-							if(secondary[j][0] == scope.logs[i].secondaryUser) {
-								break;
-							}
-						}
-						secondary[secondary.length][0] = $scope.logs[i].secondaryUser;
-					}
-					for(i = 0; i < secondary.length; i++) {
-						$http.get("/iTrust2/api/v1/role/{secondary[i][0]}").then(
-							function(response) {
-								secondary[i][1] = response.data;
-								$scope.message = "";
-							}, function(rejection) {
-								$scope.message = "error retrieving role";
-							}
-						);
-					}
-				}
+					)
+				};
 				$scope.loadTable();
 				function secondaryToRole(name) {
 					for(i = 0; i < secondary.length; i++) {
