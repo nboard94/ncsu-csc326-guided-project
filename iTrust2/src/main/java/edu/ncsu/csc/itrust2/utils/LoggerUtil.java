@@ -100,14 +100,13 @@ public class LoggerUtil {
     }
 
     /**
-     * Get the logged events for a single user specified by name, sorted by most
+     * Get the logged events for the currently logged in user, sorted by most
      * recent.
      *
-     * @param user
-     *            User to find LogEntries for
      * @return A List of the LogEntry Entries for the user.
      */
-    static public List<LogEntry> getSortedForUser ( final String user ) {
+    static public List<LogEntry> getSortedForUser () {
+        final String user = currentUser();
         final List<LogEntry> logs = getAllForUser( user );
         logs.sort( new Comparator<Object>() {
             @Override
@@ -120,11 +119,9 @@ public class LoggerUtil {
     }
 
     /**
-     * Get the most recent specified number logged events for a single user
-     * specified by name.
+     * Get the most recent specified number logged events for the currently
+     * logged in user.
      *
-     * @param user
-     *            User to find LogEntries for
      * @param top
      *            Number of events to find
      * @return A List of the LogEntry Entries for the user. If the number of
