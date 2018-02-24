@@ -4,7 +4,84 @@
 </head>
 <body th:include="layout :: body" th:with="content=~{::content}">
 	<div th:fragment="content">
-		<h1>View All Records</h1>
+		<h1>Welcome to iTrust2 - Admin</h1>
+
+		<script th:inline="javascript">
+			/* Otherwise Thymeleaf tries to parse Javascript as XML and breaks itself sometimes.  Sigh */
+			/*<![CDATA[*/
+			var app = angular.module("logsApp", []);
+			app.controller('logsCtrl', function($scope, $http) {
+				$scope.message = "";
+				$scope.logs = [];
+				$scope.loadTable = function() {
+					// get log entries
+					$http.get("/iTrust2/api/v1/sortedlogsbyuser/").then(
+						function(response) {
+							console.log(response); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "could not display logs";
+						}
+					)
+				};
+				$scope.loadTable();
+				$scope.filterLogs = function() {
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.startDate.getTime().toString() + "/" + $scope.endDate.getTime().toString()).then(
+						function(response) {
+							console.log(response); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
+						}, function(rejection) {
+							console.log(rejection); //
+							$scope.message = "could not display logs";
+						}
+					)
+				};
+			});
+			/*]]>*/
+		</script>
+
+		<div ng-app="logsApp" ng-controller="logsCtrl">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="panel panel-primary">
+							<div class="panel-heading">
+								<h3>Access Log - All Entries</h3>
+								<div>
+									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
+									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
+									<button ng-click="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
+								</div>
+							</div>
+							<div class="panel-body">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th>Transaction Type</th>
+											<th>Primary User</th>
+											<th>Secondary User</th>
+											<th>Date and Time</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr name="logTableRow"
+											ng-repeat="l in logs">
+											<td name="transactionTypeCell">{{l.logCode}}</td>
+											<td name="primaryCell">{{l.primaryUser}}</td>
+											<td name="secondaryCell">{{l.secondaryUser}}</td>
+											<td name="timeCell">{{l.time}}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

@@ -89,9 +89,11 @@ public class APILogEntryController extends APIController {
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/userlogsbydate/{stime}/{etime}" )
-    public List<LogEntry> getUserLogsByDate ( @PathVariable ( "stime" ) final long stime,
-            @PathVariable ( "etime" ) final long etime ) {
+    @GetMapping ( BASE_PATH + "/userlogsbydate/{sstring}/{estring}" )
+    public List<LogEntry> getUserLogsByDate ( @PathVariable ( "sstring" ) final String sstring,
+            @PathVariable ( "estring" ) final String estring ) {
+        final long stime = Long.parseLong( sstring );
+        final long etime = Long.parseLong( estring );
         final Date start = new Date();
         final Date end = new Date();
         start.setTime( stime );

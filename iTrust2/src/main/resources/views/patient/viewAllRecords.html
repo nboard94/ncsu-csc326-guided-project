@@ -12,9 +12,7 @@
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
 				$scope.message = "";
-				$scope.username = "";
 				$scope.logs = [];
-				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
 				$scope.loadTable = function() {
 					// get log entries
 					$http.get("/iTrust2/api/v1/sortedlogsbyuser/").then(
@@ -30,11 +28,7 @@
 				};
 				$scope.loadTable();
 				$scope.filterLogs = function() {
-					console.log($scope.startDate); //
-					console.log($scope.startDate.getTime()); //
-					console.log($scope.endDate); //
-					console.log($scope.endDate.getTime()); //
-					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.startDate.getTime() + "/" + $scope.endDate.getTime()).then(
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.startDate.getTime().toString() + "/" + $scope.endDate.getTime().toString()).then(
 						function(response) {
 							console.log(response); //
 							$scope.logs = response.data;
