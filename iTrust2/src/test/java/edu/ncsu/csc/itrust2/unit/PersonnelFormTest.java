@@ -51,10 +51,9 @@ public class PersonnelFormTest {
         assertEquals( "email@email.com", form.getEmail() );
         assertEquals( "1", form.getId() );
         assertEquals("5", form.getEnabled());
-        final User u = new User();
-        u.setUsername("username");
- //       final PersonnelForm form2 = new PersonnelForm(u);
-//        assertEquals(form2.getId(), "username");
+        final User u = new User("username", "123456", Role.ROLE_ADMIN, 1);
+        PersonnelForm form2 = new PersonnelForm(u);
+ //      assertEquals(form2., "username");
   //      form2.setEnabled("enabled");
     //    assertEquals(form2.getEnabled(), "enabled");
         
