@@ -119,9 +119,10 @@ public class LoggerUtil {
     }
 
     /**
-     * Get the most recent specified number logged events for the currently
-     * logged in user.
+     * Get the most recent specified number of logged events for the given user.
      *
+     * @param user
+     *            user for whom to find logs
      * @param top
      *            Number of events to find
      * @return A List of the LogEntry Entries for the user. If the number of

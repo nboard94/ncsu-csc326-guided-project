@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ncsu.csc.itrust2.models.enums.Role;
+import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 import edu.ncsu.csc.itrust2.models.persistent.LogEntry;
 import edu.ncsu.csc.itrust2.models.persistent.User;
 import edu.ncsu.csc.itrust2.utils.LoggerUtil;
@@ -52,17 +53,15 @@ public class APILogEntryController extends APIController {
     }
 
     /**
-     * Retrieves and returns a List of all LogEntries where the given user is
-     * primaryUser or secondaryUser, sorted by most recent
-     *
-     * @param user
-     *            user for whom to retrieve logs
+     * Retrieves and returns a List of all LogEntries where the currently logged
+     * in user is primaryUser or secondaryUser, sorted by most recent
      *
      * @return list of log entries
      */
     @GetMapping ( BASE_PATH + "/sortedlogsbyuser/" )
     public List<LogEntry> getSortedForUser () {
         final List<LogEntry> logs = LoggerUtil.getSortedForUser();
+        LoggerUtil.log( TransactionType.LOG_EVENTS_VIEWED, LoggerUtil.currentUser() );
         return setRoles( logs );
     }
 
@@ -82,9 +81,9 @@ public class APILogEntryController extends APIController {
      * Retrieves and returns a list of the user's logs within a specified date
      * range.
      *
-     * @param start
+     * @param sstring
      *            start date of logs to retrieve
-     * @param end
+     * @param estring
      *            end date of logs to retrieve
      *
      * @return list of log entries
