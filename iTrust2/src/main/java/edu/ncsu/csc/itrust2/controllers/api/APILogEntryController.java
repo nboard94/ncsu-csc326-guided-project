@@ -19,7 +19,7 @@ import edu.ncsu.csc.itrust2.utils.LoggerUtil;
  * REST controller for interacting with Log Entry-related endpoints This will
  * have somewhat reduced functionality compared to the other controllers because
  * we don't want users to be able to delete logged events (_even_ if they are
- * Personnel/an admin)
+ * Personnel/an admin).
  *
  * @author Kai Presler-Marshall
  *
