@@ -29,13 +29,7 @@ public class AdminController {
         return edu.ncsu.csc.itrust2.models.enums.Role.ROLE_ADMIN.getLanding();
     }
 
-    /**
-     * View all access logs
-     *
-     * @param model
-     *            data for front end
-     * @return mapping
-     */
+    
     /**
      * On a GET request to /viewAllRecords, the AdminController will return
      * /src/main/resources/views/admin/viewAllRecords.html.

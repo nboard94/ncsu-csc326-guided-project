@@ -50,5 +50,18 @@ public class HCPController {
     public String editPrescriptions () {
         return "/hcp/editPrescriptions";
     }
+    
+    /**
+     * On a GET request to /viewAllRecords, the HCPController will return
+     * /src/main/resources/views/hcp/viewAllRecords.html.
+     *
+     * @param model
+     *            underlying UI model
+     * @return contents of the page
+     */
+    @GetMapping ( "hcp/viewAllRecords" )
+    public String viewAllRecords ( final Model model ) {
+        return "hcp/viewAllRecords";
+    }
 
 }

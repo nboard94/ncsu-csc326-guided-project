@@ -2,6 +2,7 @@ package edu.ncsu.csc.itrust2.cucumber;
 
 import static org.junit.Assert.fail;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
@@ -25,6 +26,10 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import edu.ncsu.csc.itrust2.forms.hcp_patient.PatientForm;
+import edu.ncsu.csc.itrust2.forms.personnel.PersonnelForm;
+import edu.ncsu.csc.itrust2.models.enums.Role;
+import edu.ncsu.csc.itrust2.models.enums.State;
 import edu.ncsu.csc.itrust2.models.persistent.PasswordResetToken;
 import edu.ncsu.csc.itrust2.models.persistent.Patient;
 import edu.ncsu.csc.itrust2.models.persistent.Personnel;
@@ -32,313 +37,337 @@ import edu.ncsu.csc.itrust2.models.persistent.User;
 import edu.ncsu.csc.itrust2.utils.HibernateDataGenerator;
 
 public class PasswordChangeStepDefs {
-    private WebDriver          driver;
-    private final String       baseUrl = "http://localhost:8080/iTrust2";
+	private WebDriver          driver;
+	private final String       baseUrl = "http://localhost:8080/iTrust2";
 
-    // Token for testing
-    private PasswordResetToken token   = null;
-    WebDriverWait              wait;
+	// Token for testing
+	private PasswordResetToken token   = null;
+	WebDriverWait              wait;
 
-    @Before
-    public void setup () {
-        driver = new HtmlUnitDriver( true );
-        wait = new WebDriverWait( driver, 5 );
+	@Before
+	public void setup () throws ParseException {
+		    driver = new HtmlUnitDriver( true );
+	//	ChromeDriverManager.getInstance().setup();
+		wait = new WebDriverWait( driver, 5 );
 
-        HibernateDataGenerator.generateUsers();
-    }
+	//	driver = new ChromeDriver();
+	//	wait = new WebDriverWait(driver, 10);
 
-    @After
-    public void tearDown () {
-        driver.close();
-    }
+		HibernateDataGenerator.generateUsers();
+        
+		final User patient = new User( "pwtestuser1", "$2a$10$EblZqNptyYvcLm/VwDCVAuBjzZOI7khzdyGPBr08PpIi0na624b8.",
+				Role.ROLE_PATIENT, 1 );
+		patient.save();
+		
+		final PatientForm form = new PatientForm();
+        form.setAddress1( "1 Test Street" );
+        form.setAddress2( "Address Part 2" );
+        form.setCity( "Prag" );
+        form.setEmail( "csc326.201.1@gmail.com" );
+        form.setFirstName( "Test" );
+        form.setLastName( "Patient" );
+        form.setPhone( "123-456-7890" );
+        form.setSelf( patient.getUsername() );
+        form.setState( State.NC.toString() );
+        form.setZip( "27514" );
+        form.setDateOfBirth("02/12/1997");
+        form.setPhone("919-111-8929");
+     //   form.setSelf("patient");
+        (new Patient(form)).save();
+	}
 
-    private void setTextField ( final By byval, final Object value ) {
-        final WebElement elem = driver.findElement( byval );
-        elem.clear();
-        elem.sendKeys( value.toString() );
-    }
+	@After
+	public void tearDown () {
+		driver.close();
+	}
 
-    @Given ( "I can log in to iTrust as (.+) with password (.+)" )
-    public void login ( final String username, final String password ) {
-        driver.get( baseUrl );
-        setTextField( By.name( "username" ), username );
-        setTextField( By.name( "password" ), password );
-        final WebElement submit = driver.findElement( By.className( "btn" ) );
-        submit.click();
+	private void setTextField ( final By byval, final Object value ) {
+		final WebElement elem = driver.findElement( byval );
+		elem.clear();
+		elem.sendKeys( value.toString() );
+	}
 
-        wait.until( ExpectedConditions.not( ExpectedConditions.titleIs( "iTrust2 :: Login" ) ) );
-    }
+	@Given ( "I can log in to iTrust as (.+) with password (.+)" )
+	public void login ( final String username, final String password ) {
+		driver.get( baseUrl );
+		setTextField( By.name( "username" ), username );
+		setTextField( By.name( "password" ), password );
+		final WebElement submit = driver.findElement( By.className( "btn" ) );
+		submit.click();
 
-    @When ( "I navigate to the change password page" )
-    public void navigateChange () {
-        ( (JavascriptExecutor) driver ).executeScript( "document.getElementById('changePassword').click();" );
-    }
+		wait.until( ExpectedConditions.not( ExpectedConditions.titleIs( "iTrust2 :: Login" ) ) );
+	}
 
-    @When ( "I fill out the form with current password (.+) and new password (.+)" )
-    public void fillChangeForm ( final String password, final String newPassword ) {
-        // Wait until page loads
-        wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "currentPW" ) ) );
+	@When ( "I navigate to the change password page" )
+	public void navigateChange () {
+		( (JavascriptExecutor) driver ).executeScript( "document.getElementById('changePassword').click();" );
+	}
 
-        setTextField( By.name( "currentPW" ), password );
-        setTextField( By.name( "newPW" ), newPassword );
-        setTextField( By.name( "confirmPW" ), newPassword );
+	@When ( "I fill out the form with current password (.+) and new password (.+)" )
+	public void fillChangeForm ( final String password, final String newPassword ) {
+		// Wait until page loads
+		wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "currentPW" ) ) );
 
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		setTextField( By.name( "currentPW" ), password );
+		setTextField( By.name( "newPW" ), newPassword );
+		setTextField( By.name( "confirmPW" ), newPassword );
 
-    @When ( "I fill out the form with current password (.+), new password (.+), and re-entry (.+)" )
-    public void fillChangeForm ( final String currentPassword, final String newPassword, final String newPassword2 ) {
-        // Wait until page loads
-        wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "currentPW" ) ) );
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-        setTextField( By.name( "currentPW" ), currentPassword );
-        setTextField( By.name( "newPW" ), newPassword );
-        setTextField( By.name( "confirmPW" ), newPassword2 );
+	@When ( "I fill out the form with current password (.+), new password (.+), and re-entry (.+)" )
+	public void fillChangeForm ( final String currentPassword, final String newPassword, final String newPassword2 ) {
+		// Wait until page loads
+		wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "currentPW" ) ) );
 
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		setTextField( By.name( "currentPW" ), currentPassword );
+		setTextField( By.name( "newPW" ), newPassword );
+		setTextField( By.name( "confirmPW" ), newPassword2 );
 
-    @Then ( "My password is updated sucessfully" )
-    public void verifyUpdate () {
-        try {
-            wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ),
-                    "Password changed successfully" ) );
-        }
-        catch ( final Exception e ) {
-            fail( driver.findElement( By.name( "message" ) ).getText() + "\n" + token.getId() + "\n"
-                    + token.getTempPasswordPlaintext() );
-        }
-        // driver.findElement( By.id( "logout" ) ).click();
-    }
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-    @Then ( "My password is not updated because (.*)" )
-    public void verifyNoUpdate ( final String message ) {
-        try {
-            wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ), message ) );
-        }
-        catch ( final Exception e ) {
-            fail( driver.findElement( By.name( "message" ) ).getText() + "\n" + token.getId() + "\n"
-                    + token.getTempPasswordPlaintext() );
-        }
-    }
+	@Then ( "My password is updated sucessfully" )
+	public void verifyUpdate () {
+		try {
+			wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ),
+					"Password changed successfully" ) );
+		}
+		catch ( final Exception e ) {
+			fail( driver.findElement( By.name( "message" ) ).getText() + "\n" + token.getId() + "\n"
+					+ token.getTempPasswordPlaintext() );
+		}
+		// driver.findElement( By.id( "logout" ) ).click();
+	}
 
-    @Given ( "The user (.+) exists with email (.+)" )
-    public void userExistsWithEmail ( final String username, final String email ) throws InterruptedException {
+	@Then ( "My password is not updated because (.*)" )
+	public void verifyNoUpdate ( final String message ) {
+		try {
+			wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ), message ) );
+		}
+		catch ( final Exception e ) {
+			fail( driver.findElement( By.name( "message" ) ).getText() + "\n" + token.getId() + "\n"
+					+ token.getTempPasswordPlaintext() );
+		}
+	}
 
-        final User user = User.getByName( username );
-        switch ( user.getRole() ) {
-            case ROLE_PATIENT:
-                Patient dbPatient = Patient.getPatient( username );
-                if ( null == dbPatient ) {
-                    dbPatient = new Patient();
-                }
-                dbPatient.setSelf( user );
-                dbPatient.setFirstName( "Test" );
-                dbPatient.setLastName( "User" );
-                dbPatient.setEmail( email );
-                dbPatient.setAddress1( "1234 Street Dr." );
-                dbPatient.setCity( "city" );
-                dbPatient.setZip( "12345" );
-                dbPatient.setPhone( "123-456-7890" );
-                dbPatient.save();
-                break;
+	@Given ( "The user (.+) exists with email (.+)" )
+	public void userExistsWithEmail ( final String username, final String email ) throws InterruptedException {
 
-            default:
-                Personnel dbPersonnel = Personnel.getByName( username );
-                if ( null == dbPersonnel ) {
-                    dbPersonnel = new Personnel();
-                }
-                dbPersonnel.setSelf( user );
-                dbPersonnel.setFirstName( "Test" );
-                dbPersonnel.setLastName( "User" );
-                dbPersonnel.setEmail( email );
-                dbPersonnel.setAddress1( "1234 Street Dr." );
-                dbPersonnel.setCity( "city" );
-                dbPersonnel.setZip( "12345" );
-                dbPersonnel.setPhone( "123-456-7890" );
-                dbPersonnel.setEnabled( 1 );
-                dbPersonnel.save();
-                break;
-        }
+		final User user = User.getByName( username );
+		switch ( user.getRole() ) {
+		case ROLE_PATIENT:
+			Patient dbPatient = Patient.getPatient( username );
+			if ( null == dbPatient ) {
+				dbPatient = new Patient();
+			}
+			dbPatient.setSelf( user );
+			dbPatient.setFirstName( "Test" );
+			dbPatient.setLastName( "User" );
+			dbPatient.setEmail( email );
+			dbPatient.setAddress1( "1234 Street Dr." );
+			dbPatient.setCity( "city" );
+			dbPatient.setZip( "12345" );
+			dbPatient.setPhone( "123-456-7890" );
+			dbPatient.save();
+			break;
 
-    }
+		default:
+			Personnel dbPersonnel = Personnel.getByName( username );
+			if ( null == dbPersonnel ) {
+				dbPersonnel = new Personnel();
+			}
+			dbPersonnel.setSelf( user );
+			dbPersonnel.setFirstName( "Test" );
+			dbPersonnel.setLastName( "User" );
+			dbPersonnel.setEmail( email );
+			dbPersonnel.setAddress1( "1234 Street Dr." );
+			dbPersonnel.setCity( "city" );
+			dbPersonnel.setZip( "12345" );
+			dbPersonnel.setPhone( "123-456-7890" );
+			dbPersonnel.setEnabled( 1 );
+			dbPersonnel.save();
+			break;
+		}
 
-    @When ( "I navigate to the Forgot Password page" )
-    public void navigateForgot () {
-        driver.get( baseUrl );
-        ( (JavascriptExecutor) driver ).executeScript( "document.getElementById('passwordResetRequest').click();" );
-    }
+	}
 
-    @When ( "I enter the temporary password wrong, new password (.+) and reentry (.+)" )
-    public void wrongTemp ( final String newPassword, final String newPassword2 ) {
-        // Wait until page loads
-        wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
+	@When ( "I navigate to the Forgot Password page" )
+	public void navigateForgot () {
+		driver.get( baseUrl );
+		( (JavascriptExecutor) driver ).executeScript( "document.getElementById('passwordResetRequest').click();" );
+	}
 
-        setTextField( By.name( "tempPW" ), "this is wrong" );
-        setTextField( By.name( "newPW" ), newPassword );
-        setTextField( By.name( "confirmPW" ), newPassword2 );
+	@When ( "I enter the temporary password wrong, new password (.+) and reentry (.+)" )
+	public void wrongTemp ( final String newPassword, final String newPassword2 ) {
+		// Wait until page loads
+		wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
 
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		setTextField( By.name( "tempPW" ), "this is wrong" );
+		setTextField( By.name( "newPW" ), newPassword );
+		setTextField( By.name( "confirmPW" ), newPassword2 );
 
-    @When ( "I fill out the request for with the username (.+)" )
-    public void fillResetRequest ( final String username ) throws InterruptedException {
-        Thread.sleep( 100 );
-        final WebElement un = driver.findElement( By.name( "username" ) );
-        un.clear();
-        un.sendKeys( username );
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-    @When ( "I receive an email with a link and temporary password" )
-    public void getEmail () throws InterruptedException {
-        // wait for the email to be sent
-        try {
-            new WebDriverWait( driver, 30 ).until( ExpectedConditions.textToBePresentInElementLocated(
-                    By.name( "message" ), "Password reset request successfully sent" ) );
-        }
-        catch ( final Exception e ) {
-            fail( e.getMessage() + "\n" + driver.findElement( By.name( "message" ) ).getText() );
-        }
+	@When ( "I fill out the request for with the username (.+)" )
+	public void fillResetRequest ( final String username ) throws InterruptedException {
+		Thread.sleep( 100 );
+		final WebElement un = driver.findElement( By.name( "username" ) );
+		un.clear();
+		un.sendKeys( username );
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-        // wait for the email to be delivered
-        Thread.sleep( 5 * 1000 );
-        token = getTokenFromEmail();
-        if ( token == null ) {
-            fail( "Failed to receive email" );
-        }
-    }
+	@When ( "I receive an email with a link and temporary password" )
+	public void getEmail () throws InterruptedException {
+		// wait for the email to be sent
+		try {
+			new WebDriverWait( driver, 30 ).until( ExpectedConditions.textToBePresentInElementLocated(
+					By.name( "message" ), "Password reset request successfully sent" ) );
+		}
+		catch ( final Exception e ) {
+			fail( e.getMessage() + "\n" + driver.findElement( By.name( "message" ) ).getText() );
+		}
 
-    @When ( "I follow the link to the password reset page" )
-    public void followLink () {
-        // NOTE: can host be localhost always?
-        // Token should not be null at this point
-        final String link = "http://localhost:8080/iTrust2/resetPassword?tkid=" + token.getId();
-        driver.get( link );
-    }
+		// wait for the email to be delivered
+		Thread.sleep( 5 * 1000 );
+		token = getTokenFromEmail();
+		if ( token == null ) {
+			fail( "Failed to receive email" );
+		}
+	}
 
-    @When ( "I enter the temporary password and new password (.+)" )
-    public void fillResetForm ( final String newPassword ) {
-        // Wait until page loads
-        wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
+	@When ( "I follow the link to the password reset page" )
+	public void followLink () {
+		// NOTE: can host be localhost always?
+		// Token should not be null at this point
+		final String link = "http://localhost:8080/iTrust2/resetPassword?tkid=" + token.getId();
+		driver.get( link );
+	}
 
-        setTextField( By.name( "tempPW" ), token.getTempPasswordPlaintext() );
-        setTextField( By.name( "newPW" ), newPassword );
-        setTextField( By.name( "confirmPW" ), newPassword );
+	@When ( "I enter the temporary password and new password (.+)" )
+	public void fillResetForm ( final String newPassword ) {
+		// Wait until page loads
+		wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
 
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		setTextField( By.name( "tempPW" ), token.getTempPasswordPlaintext() );
+		setTextField( By.name( "newPW" ), newPassword );
+		setTextField( By.name( "confirmPW" ), newPassword );
 
-    @Given ( "The user (.+) does not exist in the system" )
-    public void noUser ( final String username ) {
-        // we can safely assume this user was never created
-    }
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-    @Then ( "I see an error message on the password page" )
-    public void resetError () {
-        try {
-            wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ),
-                    "Password reset request could not be sent" ) );
-        }
-        catch ( final Exception e ) {
-            fail( driver.findElement( By.name( "message" ) ).getText() );
-        }
-    }
+	@Given ( "The user (.+) does not exist in the system" )
+	public void noUser ( final String username ) {
+		// we can safely assume this user was never created
+	}
 
-    @When ( "I enter the temporary password, new password (.+) and reentry (.+)" )
-    public void fillResetForm ( final String newPassword, final String newPassword2 ) {
-        // Wait until page loads
-        wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
+	@Then ( "I see an error message on the password page" )
+	public void resetError () {
+		try {
+			wait.until( ExpectedConditions.textToBePresentInElementLocated( By.name( "message" ),
+					"Password reset request could not be sent" ) );
+		}
+		catch ( final Exception e ) {
+			fail( driver.findElement( By.name( "message" ) ).getText() );
+		}
+	}
 
-        setTextField( By.name( "tempPW" ), token.getTempPasswordPlaintext() );
-        setTextField( By.name( "newPW" ), newPassword );
-        setTextField( By.name( "confirmPW" ), newPassword2 );
+	@When ( "I enter the temporary password, new password (.+) and reentry (.+)" )
+	public void fillResetForm ( final String newPassword, final String newPassword2 ) {
+		// Wait until page loads
+		wait.until( ExpectedConditions.visibilityOfElementLocated( By.name( "tempPW" ) ) );
 
-        final WebElement submit = driver.findElement( By.name( "submitButton" ) );
-        submit.click();
-    }
+		setTextField( By.name( "tempPW" ), token.getTempPasswordPlaintext() );
+		setTextField( By.name( "newPW" ), newPassword );
+		setTextField( By.name( "confirmPW" ), newPassword2 );
 
-    /*
-     * Credit for checking email:
-     * https://www.tutorialspoint.com/javamail_api/javamail_api_checking_emails.
-     * htm
-     */
-    private PasswordResetToken getTokenFromEmail () {
-        final String username = "csc326.201.1@gmail.com";
-        final String password = "iTrust2Admin123456";
-        final String host = "pop.gmail.com";
-        PasswordResetToken token = null;
-        try {
-            // create properties field
-            final Properties properties = new Properties();
-            properties.put( "mail.store.protocol", "pop3" );
-            properties.put( "mail.pop3.host", host );
-            properties.put( "mail.pop3.port", "995" );
-            properties.put( "mail.pop3.starttls.enable", "true" );
-            final Session emailSession = Session.getDefaultInstance( properties );
-            // emailSession.setDebug(true);
+		final WebElement submit = driver.findElement( By.name( "submitButton" ) );
+		submit.click();
+	}
 
-            // create the POP3 store object and connect with the pop server
-            final Store store = emailSession.getStore( "pop3s" );
+	/*
+	 * Credit for checking email:
+	 * https://www.tutorialspoint.com/javamail_api/javamail_api_checking_emails.
+	 * htm
+	 */
+	private PasswordResetToken getTokenFromEmail () {
+		final String username = "csc326.201.1@gmail.com";
+		final String password = "iTrust2Admin123456";
+		final String host = "pop.gmail.com";
+		PasswordResetToken token = null;
+		try {
+			// create properties field
+			final Properties properties = new Properties();
+			properties.put( "mail.store.protocol", "pop3" );
+			properties.put( "mail.pop3.host", host );
+			properties.put( "mail.pop3.port", "995" );
+			properties.put( "mail.pop3.starttls.enable", "true" );
+			final Session emailSession = Session.getDefaultInstance( properties );
+			// emailSession.setDebug(true);
 
-            store.connect( host, username, password );
+			// create the POP3 store object and connect with the pop server
+			final Store store = emailSession.getStore( "pop3s" );
 
-            // create the folder object and open it
-            final Folder emailFolder = store.getFolder( "INBOX" );
-            emailFolder.open( Folder.READ_WRITE );
+			store.connect( host, username, password );
 
-            // retrieve the messages from the folder in an array and print it
-            final Message[] messages = emailFolder.getMessages();
-            Arrays.sort( messages, ( x, y ) -> {
-                try {
-                    return y.getSentDate().compareTo( x.getSentDate() );
-                }
-                catch ( final MessagingException e ) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                return 0;
-            } );
-            for ( final Message message : messages ) {
-                // SUBJECT
-                if ( message.getSubject() != null && message.getSubject().contains( "iTrust2 Password Reset" ) ) {
-                    String content = (String) message.getContent();
-                    content = content.replaceAll( "\r", "" ); // Windows
-                    content = content.substring( content.indexOf( "?tkid=" ) );
+			// create the folder object and open it
+			final Folder emailFolder = store.getFolder( "INBOX" );
+			emailFolder.open( Folder.READ_WRITE );
 
-                    final Scanner scan = new Scanner( content.substring( 6, content.indexOf( '\n' ) ) );
-                    System.err.println( "token(" + content.substring( 6, content.indexOf( '\n' ) ) + ")end" );
-                    final long tokenId = scan.nextLong();
-                    scan.close();
+			// retrieve the messages from the folder in an array and print it
+			final Message[] messages = emailFolder.getMessages();
+			Arrays.sort( messages, ( x, y ) -> {
+				try {
+					return y.getSentDate().compareTo( x.getSentDate() );
+				}
+				catch ( final MessagingException e ) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return 0;
+			} );
+			for ( final Message message : messages ) {
+				// SUBJECT
+				if ( message.getSubject() != null && message.getSubject().contains( "iTrust2 Password Reset" ) ) {
+					String content = (String) message.getContent();
+					content = content.replaceAll( "\r", "" ); // Windows
+					content = content.substring( content.indexOf( "?tkid=" ) );
 
-                    content = content.substring( content.indexOf( "temporary password: " ) );
-                    content = content.substring( 20, content.indexOf( "\n" ) );
-                    content.trim();
+					final Scanner scan = new Scanner( content.substring( 6, content.indexOf( '\n' ) ) );
+					System.err.println( "token(" + content.substring( 6, content.indexOf( '\n' ) ) + ")end" );
+					final long tokenId = scan.nextLong();
+					scan.close();
 
-                    if ( content.endsWith( "\n" ) ) {
-                        content = content.substring( content.length() - 1 );
-                    }
+					content = content.substring( content.indexOf( "temporary password: " ) );
+					content = content.substring( 20, content.indexOf( "\n" ) );
+					content.trim();
 
-                    token = new PasswordResetToken();
-                    token.setId( tokenId );
-                    token.setTempPasswordPlaintext( content );
-                    break;
-                }
-            }
+					if ( content.endsWith( "\n" ) ) {
+						content = content.substring( content.length() - 1 );
+					}
 
-            // close the store and folder objects
-            emailFolder.close( false );
-            store.close();
-            return token;
-        }
-        catch ( final Exception e ) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+					token = new PasswordResetToken();
+					token.setId( tokenId );
+					token.setTempPasswordPlaintext( content );
+					break;
+				}
+			}
+
+			// close the store and folder objects
+			emailFolder.close( false );
+			store.close();
+			return token;
+		}
+		catch ( final Exception e ) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

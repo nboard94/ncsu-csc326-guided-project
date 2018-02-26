@@ -12,39 +12,23 @@
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
 				$scope.message = "";
-				$scope.username = "";
 				$scope.logs = [];
-				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
-				var added = false;
 				$scope.loadTable = function() {
-					// get current username
-					$http.get("/iTrust2/api/v1/username").then(
+					// get log entries
+					$http.get("/iTrust2/api/v1/sortedlogsbyuser/").then(
 						function(response) {
 							console.log(response); //
-							$scope.username = response.data.message;
-							$scope.message = "user retrieved";
-							console.log($scope.username); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
 						}, function(rejection) {
 							console.log(rejection); //
-							$scope.message = "you don't exist";
+							$scope.message = "could not display logs";
 						}
-					).then(function(){
-						// get log entries
-						$http.get("/iTrust2/api/v1/sortedlogsbyuser/" + $scope.username).then(
-							function(response) {
-								console.log(response); //
-								$scope.logs = response.data;
-								$scope.message = "log entries retrieved";
-							}, function(rejection) {
-								console.log(rejection); //
-								$scope.message = "could not display logs";
-							}
-						)
-					});
+					)
 				};
 				$scope.loadTable();
 				$scope.filterLogs = function() {
-					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.username + "/" + $scope.startDate + "/" + $scope.endDate).then(
+					$http.get("/iTrust2/api/v1/userlogsbydate/" + $scope.startDate.getTime().toString() + "/" + $scope.endDate.getTime().toString()).then(
 						function(response) {
 							console.log(response); //
 							$scope.logs = response.data;
@@ -69,7 +53,7 @@
 								<div>
 									Entries from: <input class="form-control" type="date" name="startDate" ng-model="startDate" required> to
 									<input class="form-control" type="date" name="endDate" ng-model="endDate" required>
-									<button onclick="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
+									<button ng-click="filterLogs()" class="btn btn- primary btn-sm">Filter Logs</button>
 								</div>
 							</div>
 							<div class="panel-body">

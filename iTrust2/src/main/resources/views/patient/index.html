@@ -12,35 +12,19 @@
 			var app = angular.module("logsApp", []);
 			app.controller('logsCtrl', function($scope, $http) {
 				$scope.message = "";
-				$scope.username = "";
 				$scope.logs = [];
-				$scope.pattern = /^\d{4}-\d{4}-\d{2}$/;
-				var added = false;
 				$scope.loadTable = function() {
-					// get current username
-					$http.get("/iTrust2/api/v1/username").then(
+					// get log entries
+					$http.get("/iTrust2/api/v1/tenlogsbyuser/").then(
 						function(response) {
 							console.log(response); //
-							$scope.username = response.data.message;
-							$scope.message = "user retrieved";
-							console.log($scope.username); //
+							$scope.logs = response.data;
+							$scope.message = "log entries retrieved";
 						}, function(rejection) {
 							console.log(rejection); //
-							$scope.message = "you don't exist";
+							$scope.message = "could not display logs";
 						}
-					).then(function(){
-						// get log entries
-						$http.get("/iTrust2/api/v1/tenlogsbyuser/" + $scope.username).then(
-							function(response) {
-								console.log(response); //
-								$scope.logs = response.data;
-								$scope.message = "log entries retrieved";
-							}, function(rejection) {
-								console.log(rejection); //
-								$scope.message = "could not display logs";
-							}
-						)
-					});
+					)
 				};
 				$scope.loadTable();
 			});

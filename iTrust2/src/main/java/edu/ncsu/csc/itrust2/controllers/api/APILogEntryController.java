@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ncsu.csc.itrust2.models.enums.Role;
+import edu.ncsu.csc.itrust2.models.enums.TransactionType;
 import edu.ncsu.csc.itrust2.models.persistent.LogEntry;
 import edu.ncsu.csc.itrust2.models.persistent.User;
 import edu.ncsu.csc.itrust2.utils.LoggerUtil;
@@ -18,7 +19,7 @@ import edu.ncsu.csc.itrust2.utils.LoggerUtil;
  * REST controller for interacting with Log Entry-related endpoints This will
  * have somewhat reduced functionality compared to the other controllers because
  * we don't want users to be able to delete logged events (_even_ if they are
- * Personnel/an admin)
+ * Personnel/an admin).
  *
  * @author Kai Presler-Marshall
  *
@@ -52,121 +53,100 @@ public class APILogEntryController extends APIController {
     }
 
     /**
-     * Retrieves and returns a List of all LogEntries where the given user is
-     * primaryUser or secondaryUser, sorted by most recent
-     *
-     * @param user
-     *            user for whom to retrieve logs
+     * Retrieves and returns a List of all LogEntries where the currently logged
+     * in user is primaryUser or secondaryUser, sorted by most recent
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/sortedlogsbyuser/{user}" )
-    public List<LogEntry> getSortedForUser ( @PathVariable ( "user" ) final String user ) {
-        final List<LogEntry> logs = LoggerUtil.getSortedForUser( user );
-        for ( int i = 0; i < logs.size(); i++ ) {
-            final LogEntry entry = logs.get( i );
-            final Role primRole = User.getByName( entry.getPrimaryUser() ).getRole();
-            Role secRole = null;
-            if ( entry.getSecondaryUser() != null ) {
-                secRole = User.getByName( entry.getSecondaryUser() ).getRole();
-            }
-            if ( primRole != Role.ROLE_PATIENT ) {
-                if ( primRole == Role.ROLE_ADMIN ) {
-                    entry.setMessage( "ROLE_ADMIN" );
-                }
-                else if ( primRole == Role.ROLE_HCP ) {
-                    entry.setMessage( "ROLE_HCP" );
-                }
-                else {
-                    entry.setMessage( "" );
-                }
-            }
-            else if ( secRole != null && secRole != Role.ROLE_PATIENT ) {
-                if ( secRole == Role.ROLE_ADMIN ) {
-                    entry.setMessage( "ROLE_ADMIN" );
-                }
-                else if ( secRole == Role.ROLE_HCP ) {
-                    entry.setMessage( "ROLE_HCP" );
-                }
-                else {
-                    entry.setMessage( "" );
-                }
-            }
-            else {
-                entry.setMessage( "" );
-            }
-            logs.set( i, entry );
-        }
-        return logs;
+    @GetMapping ( BASE_PATH + "/sortedlogsbyuser/" )
+    public List<LogEntry> getSortedForUser () {
+        final List<LogEntry> logs = LoggerUtil.getSortedForUser();
+        LoggerUtil.log( TransactionType.LOG_EVENTS_VIEWED, LoggerUtil.currentUser() );
+        return setRoles( logs );
     }
 
     /**
      * Retrieves and returns a List of the most recent ten LogEntries where the
-     * given user is primaryUser or secondaryUser
-     *
-     * @param user
-     *            user for whom to retrieve logs
+     * currently logged in user is primaryUser or secondaryUser
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/tenlogsbyuser/{user}" )
-    public List<LogEntry> getTopTenForUser ( @PathVariable ( "user" ) final String user ) {
-        final List<LogEntry> logs = LoggerUtil.getTopForUser( user, 10 );
-        for ( int i = 0; i < logs.size(); i++ ) {
-            final LogEntry entry = logs.get( i );
-            final Role primRole = User.getByName( entry.getPrimaryUser() ).getRole();
-            Role secRole = null;
-            if ( entry.getSecondaryUser() != null ) {
-                secRole = User.getByName( entry.getSecondaryUser() ).getRole();
-            }
-            if ( primRole != Role.ROLE_PATIENT ) {
-                if ( primRole == Role.ROLE_ADMIN ) {
-                    entry.setMessage( "ROLE_ADMIN" );
-                }
-                else if ( primRole == Role.ROLE_HCP ) {
-                    entry.setMessage( "ROLE_HCP" );
-                }
-                else {
-                    entry.setMessage( "" );
-                }
-            }
-            else if ( secRole != null && secRole != Role.ROLE_PATIENT ) {
-                if ( secRole == Role.ROLE_ADMIN ) {
-                    entry.setMessage( "ROLE_ADMIN" );
-                }
-                else if ( secRole == Role.ROLE_HCP ) {
-                    entry.setMessage( "ROLE_HCP" );
-                }
-                else {
-                    entry.setMessage( "" );
-                }
-            }
-            else {
-                entry.setMessage( "" );
-            }
-            logs.set( i, entry );
-        }
-        return logs;
+    @GetMapping ( BASE_PATH + "/tenlogsbyuser/" )
+    public List<LogEntry> getTopTenForUser () {
+        final List<LogEntry> logs = LoggerUtil.getTopForUser( LoggerUtil.currentUser(), 10 );
+        return setRoles( logs );
     }
 
     /**
      * Retrieves and returns a list of the user's logs within a specified date
      * range.
      *
-     * @param user
-     *            user for whom to retrieve logs
-     *
-     * @param start
+     * @param sstring
      *            start date of logs to retrieve
-     * @param end
+     * @param estring
      *            end date of logs to retrieve
      *
      * @return list of log entries
      */
-    @GetMapping ( BASE_PATH + "/userlogsbydate/{user}/{start}/{end}" )
-    public List<LogEntry> getUserLogsByDate ( @PathVariable ( "user" ) final String user,
-            @PathVariable ( "start" ) final Date start, @PathVariable ( "end" ) final Date end ) {
-        return LoggerUtil.getByDateForUser( user, start, end );
+    @GetMapping ( BASE_PATH + "/userlogsbydate/{sstring}/{estring}" )
+    public List<LogEntry> getUserLogsByDate ( @PathVariable ( "sstring" ) final String sstring,
+            @PathVariable ( "estring" ) final String estring ) {
+        final long stime = Long.parseLong( sstring );
+        final long etime = Long.parseLong( estring );
+        final Date start = new Date();
+        final Date end = new Date();
+        start.setTime( stime );
+        end.setTime( etime );
+        final String user = LoggerUtil.currentUser();
+        final List<LogEntry> logs = LogEntry.getByDateForUser( user, start, end );
+        return setRoles( logs );
+    }
+
+    /**
+     * Takes a list of log entries and sets the message field on each to the
+     * role of either the primary or secondary user, depending on who isn't a
+     * patient.
+     *
+     * @param logs
+     *            list of log entries to set
+     * @return updated list of logs
+     */
+    private List<LogEntry> setRoles ( final List<LogEntry> logs ) {
+        for ( int i = 0; i < logs.size(); i++ ) {
+            final LogEntry entry = logs.get( i );
+            final Role primRole = User.getByName( entry.getPrimaryUser() ).getRole();
+            Role secRole = null;
+            if ( entry.getSecondaryUser() != null ) {
+                secRole = User.getByName( entry.getSecondaryUser() ).getRole();
+            }
+            if ( primRole != Role.ROLE_PATIENT ) {
+                if ( primRole == Role.ROLE_ADMIN ) {
+                    entry.setMessage( "ROLE_ADMIN" );
+                }
+                else if ( primRole == Role.ROLE_HCP ) {
+                    entry.setMessage( "ROLE_HCP" );
+                }
+                else {
+                    entry.setMessage( "" );
+                }
+            }
+            else if ( secRole != null && secRole != Role.ROLE_PATIENT ) {
+                if ( secRole == Role.ROLE_ADMIN ) {
+                    entry.setMessage( "ROLE_ADMIN" );
+                }
+                else if ( secRole == Role.ROLE_HCP ) {
+                    entry.setMessage( "ROLE_HCP" );
+                }
+                else {
+                    entry.setMessage( "" );
+                }
+            }
+            else {
+                entry.setMessage( "" );
+            }
+            logs.set( i, entry );
+        }
+        return logs;
     }
 
     /**
